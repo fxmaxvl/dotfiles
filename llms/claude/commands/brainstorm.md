@@ -1,0 +1,17 @@
+Ask the user one question at a time to iteratively build a step-by-step specification for their idea.
+Each question should build on the previous response, gradually refining the spec.
+Do **not** skip steps or ask multiple questions at once.
+
+Once the full spec is developed, save it to a file called `spec.md`.
+
+Then, ask the user:
+"Do you want to create a GitHub repository and push the generated `spec.md` file there?"
+
+If the user agrees:
+- Initialize a git repository (if not already initialized)
+- Commit the `spec.md` file
+- Create a new GitHub repository
+- Push the commit to the new remote repo
+
+Here an idea:
+$ARGUMENTS

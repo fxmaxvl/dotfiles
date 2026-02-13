@@ -1,11 +1,5 @@
----
-description: |
-  Works with todo.md and plan.md implementing steps
-globs:
-alwaysApply: false
----
-1. Open `@todo.md` and select the first unchecked items to work on.
-2. Read details about selected item from the @plan.md
+1. Open `todo.md` and select the first unchecked items to work on.
+2. Read details about selected item from the `plan.md`
 2. Carefully plan each item, then post your plan as a comment on GitHub issue #X.
 3. Create a new branch and implement your plan:
     - Write robust, well-documented code.
