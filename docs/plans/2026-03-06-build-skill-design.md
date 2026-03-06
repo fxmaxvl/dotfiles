@@ -27,8 +27,9 @@ All transitions require user approval.
 ## Phases
 
 ### Phase 0 — init
+- Asks the user where to store plan artifacts (default: `docs/plans/`)
 - Creates feature branch from master: `feat/<short-slug-from-idea>`
-- Creates `build-state.json`
+- Creates `build-state.json` (includes `plans_dir` field)
 
 ### Phase 1 — brainstorm
 - Invokes existing `brainstorm` skill with `$ARGUMENTS` as the idea
@@ -77,6 +78,7 @@ Created in the project root. Structure:
 ```json
 {
   "idea": "add dark mode to the app",
+  "plans_dir": "docs/plans/",
   "phase": "brainstorm",
   "phase_status": "in_progress",
   "artifacts": {
