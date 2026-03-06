@@ -13,13 +13,15 @@ Sync Claude configuration from this dotfiles repo to the user's `~/.claude/` dir
 
 ### 1. Sync skills (symlinks)
 
-For each subdirectory in `<source>/skills/`:
+For each subdirectory in `<source>/skills/` (skip `sync-dotfiles` — it should not sync itself):
 - If `~/.claude/skills/<name>` is already a correct symlink → skip, report "already linked"
 - If `~/.claude/skills/<name>` is a symlink pointing elsewhere → remove and re-create, report "updated"
 - If `~/.claude/skills/<name>` exists but is NOT a symlink → warn the user and skip (don't overwrite real directories)
 - If `~/.claude/skills/<name>` doesn't exist → create symlink, report "linked"
 
 Create `~/.claude/skills/` if it doesn't exist.
+
+Then clean up stale symlinks: for each symlink in `~/.claude/skills/` that points into `<source>/skills/` but whose name does NOT match a current top-level subdirectory in `<source>/skills/`, remove it and report "removed (stale)".
 
 ### 2. Sync docs (symlinks)
 

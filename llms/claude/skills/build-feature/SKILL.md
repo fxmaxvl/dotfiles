@@ -1,5 +1,5 @@
 ---
-name: build
+name: build-feature
 description: Orchestrate the full brainstorm → plan → execute workflow with review gates between phases.
 disable-model-invocation: true
 argument-hint: [idea description]
