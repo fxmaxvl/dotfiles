@@ -11,14 +11,7 @@ Do **not** skip steps or ask multiple questions at once.
 
 Once the full spec is developed, save it to a file called `<slug>-spec.md` (read `build-state.json` for the slug and `plans_dir`). If no `build-state.json` exists, ask the user for a short name and save as `<name>-spec.md` in the current directory.
 
-Then, ask the user:
-"Do you want to create a GitHub repository and push the generated spec file there?"
-
-If the user agrees:
-- Initialize a git repository (if not already initialized)
-- Commit the spec file
-- Create a new GitHub repository
-- Push the commit to the new remote repo
+Do **not** commit or push the spec file automatically — the user decides whether to track plan artifacts in git.
 
 Here an idea:
 $ARGUMENTS

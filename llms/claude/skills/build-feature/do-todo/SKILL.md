@@ -13,5 +13,5 @@ Read `build-state.json` to find the `slug` and `plans_dir`.
     - Write robust, well-documented code.
     - Include comprehensive tests and debug logging.
     - Verify that all tests pass.
-4. Commit your changes and open a pull request referencing the issue.
+4. Commit your implementation changes (do **not** stage plan artifacts like `*-spec.md`, `*-plan.md`, `*-todo.md`) and open a pull request referencing the issue.
 5. Check off the items on the todo file

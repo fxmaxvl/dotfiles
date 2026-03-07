@@ -100,7 +100,7 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 
 ## Phase 6 — Finalize
 
-1. Stage all changes
+1. Stage implementation changes only — do **not** `git add` plan artifacts (`*-spec.md`, `*-plan.md`, `*-todo.md`) or `build-state.json`. The user decides whether to track those in git.
 2. Commit using conventional commit format (see `docs/git.md`):
    - Use `feat:` prefix with a concise description of the feature
    - Add `#pr` tag since this is the feature branch
