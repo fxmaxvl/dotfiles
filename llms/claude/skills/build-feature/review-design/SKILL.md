@@ -1,10 +1,10 @@
 ---
 name: review-design
-description: Review a spec.md for architecture completeness, edge cases, and missing requirements.
+description: Review a spec for architecture completeness, edge cases, and missing requirements.
 disable-model-invocation: true
 ---
 
-Review `spec.md` and evaluate it against the following criteria. For each criterion, state whether it passes or has concerns.
+Read `build-state.json` to find the `slug` and `plans_dir`. Review `<plans_dir>/<slug>-spec.md` and evaluate it against the following criteria. For each criterion, state whether it passes or has concerns.
 
 ## Review Criteria
 
@@ -31,10 +31,10 @@ For each criterion, output one of:
 
 If any criterion has a CONCERN:
 1. List all concerns with suggested fixes
-2. Ask the user: "Should I update spec.md to address these concerns?"
-3. If yes, update `spec.md` and re-run this review
+2. Ask the user: "Should I update the spec to address these concerns?"
+3. If yes, update the spec and re-run this review
 4. Maximum 3 review cycles — after that, pause and ask the user to intervene
 
 If all criteria PASS:
-1. State "Design review passed — spec.md is ready for planning"
+1. State "Design review passed — spec is ready for planning"
 2. Ask the user for approval to proceed

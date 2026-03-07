@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Draft a detailed blueprint and break it into iterative implementation prompts from spec.md.
+description: Draft a detailed blueprint and break it into iterative implementation prompts from the spec.
 disable-model-invocation: true
 ---
 
@@ -10,6 +10,6 @@ From here you should have the foundation to provide a series of prompts for a co
 
 Make sure and separate each prompt section. Use markdown. Each prompt should be tagged as text using code tags. The goal is to output prompts, but context, etc is important as well.
 
-Store the plan in plan.md. Also create a todo.md to keep state.
+Read `build-state.json` to find the `slug` and `plans_dir`. Store the plan in `<plans_dir>/<slug>-plan.md`. Also create `<plans_dir>/<slug>-todo.md` to keep state.
 
-The spec is in the file called: `spec.md`
+The spec is in: `<plans_dir>/<slug>-spec.md`

@@ -1,16 +1,16 @@
 ---
 name: review-impl
-description: Review implementation against spec.md and plan.md for completeness and quality.
+description: Review implementation against spec and plan for completeness and quality.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash(git *)
 ---
 
-Review the implementation by comparing what was built against `spec.md` and `plan.md`. Use git diff from the feature branch to see all changes.
+Read `build-state.json` to find the `slug` and `plans_dir`. Review the implementation by comparing what was built against `<plans_dir>/<slug>-spec.md` and `<plans_dir>/<slug>-plan.md`. Use git diff from the feature branch to see all changes.
 
 ## Review Criteria
 
 ### 1. Feature completeness
-- Read `spec.md` and list every functional requirement
+- Read the spec and list every functional requirement
 - For each requirement, verify it is implemented by checking the actual code
 - Flag any requirement that is missing or partially implemented
 
@@ -44,7 +44,7 @@ For each criterion, output one of:
 
 If any criterion has a CONCERN:
 1. List all concerns with specific file paths and line numbers
-2. Create new items in `todo.md` for each fix needed
+2. Create new items in the todo file for each fix needed
 3. Ask the user: "Should I fix these concerns?"
 4. If yes, implement fixes and re-run this review
 5. Maximum 3 review cycles — after that, pause and ask the user to intervene

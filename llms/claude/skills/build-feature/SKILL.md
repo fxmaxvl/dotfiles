@@ -23,7 +23,7 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 ## Phase 0 — Init
 
 1. Derive a short kebab-case slug from the idea (e.g., "add dark mode" → "dark-mode")
-2. Ask the user: "Where should I store plan artifacts (spec.md, plan.md, todo.md)? Default: `docs/plans/`"
+2. Ask the user: "Where should I store plan artifacts? Default: `docs/plans/`"
    - If the user provides a path, use it
    - If the user accepts the default (or just says "yes"/"ok"/etc.), use `docs/plans/`
    - Create the directory if it doesn't exist
@@ -33,6 +33,7 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 ```json
 {
   "idea": "$ARGUMENTS",
+  "slug": "<slug>",
   "plans_dir": "<user-chosen or docs/plans/>",
   "phase": "brainstorm",
   "phase_status": "in_progress",
@@ -48,21 +49,21 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 
 5. Proceed to Phase 1.
 
-**All artifact paths** (`spec.md`, `plan.md`, `todo.md`) are relative to `plans_dir`. For example, if `plans_dir` is `docs/plans/`, then `spec.md` lives at `docs/plans/spec.md`.
+**Artifact naming convention:** All artifact filenames are prefixed with the slug. For example, if the slug is `dark-mode`, the artifacts are `dark-mode-spec.md`, `dark-mode-plan.md`, and `dark-mode-todo.md`. All artifact paths are relative to `plans_dir`. For example, if `plans_dir` is `docs/plans/` and slug is `dark-mode`, then the spec lives at `docs/plans/dark-mode-spec.md`.
 
 ## Phase 1 — Brainstorm
 
 1. Invoke the `brainstorm` skill with the idea from `build-state.json`
-2. The brainstorm skill will ask questions one at a time and produce `spec.md` (instruct it to save to `<plans_dir>/spec.md`)
-3. When `<plans_dir>/spec.md` is detected:
-   - Update `build-state.json`: set `artifacts.spec` to `"spec.md"`, `phase_status` to `"awaiting_approval"`
+2. The brainstorm skill will ask questions one at a time and produce the spec (instruct it to save to `<plans_dir>/<slug>-spec.md`)
+3. When `<plans_dir>/<slug>-spec.md` is detected:
+   - Update `build-state.json`: set `artifacts.spec` to `"<slug>-spec.md"`, `phase_status` to `"awaiting_approval"`
    - Tell the user: "Spec complete. Ready to run design review?"
 4. On approval: update `phase` to `"review-design"`, `phase_status` to `"in_progress"`, proceed to Phase 2
 
 ## Phase 2 — Review Design
 
 1. Invoke the `review-design` skill
-2. The review skill will evaluate `spec.md` and report PASS/CONCERN
+2. The review skill will evaluate `<slug>-spec.md` and report PASS/CONCERN
 3. If concerns are found, the review skill handles the fix loop (max 3 cycles)
 4. When review passes:
    - Update `build-state.json`: `phase_status` to `"awaiting_approval"`
@@ -71,16 +72,16 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 
 ## Phase 3 — Plan
 
-1. Invoke the `plan` skill (it reads `<plans_dir>/spec.md` and produces `<plans_dir>/plan.md` + `<plans_dir>/todo.md`)
+1. Invoke the `plan` skill (it reads `<plans_dir>/<slug>-spec.md` and produces `<plans_dir>/<slug>-plan.md` + `<plans_dir>/<slug>-todo.md`)
 2. When both files are detected:
-   - Update `build-state.json`: set `artifacts.plan` to `"plan.md"`, `artifacts.todo` to `"todo.md"`, `phase_status` to `"awaiting_approval"`
+   - Update `build-state.json`: set `artifacts.plan` to `"<slug>-plan.md"`, `artifacts.todo` to `"<slug>-todo.md"`, `phase_status` to `"awaiting_approval"`
    - Tell the user: "Plan complete. Ready to start execution?"
 3. On approval: update `phase` to `"execute"`, `phase_status` to `"in_progress"`, proceed to Phase 4
 
 ## Phase 4 — Execute
 
-1. Invoke the `do-todo` skill to pick up the next unchecked item from `todo.md`
-2. After each item is completed, check if all items in `todo.md` are checked (`[x]`)
+1. Invoke the `do-todo` skill to pick up the next unchecked item from `<slug>-todo.md`
+2. After each item is completed, check if all items in `<slug>-todo.md` are checked (`[x]`)
 3. If unchecked items remain: invoke `do-todo` again
 4. When all items are checked:
    - Update `build-state.json`: `phase_status` to `"awaiting_approval"`
@@ -90,7 +91,7 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 ## Phase 5 — Review Implementation
 
 1. Invoke the `review-impl` skill
-2. The review skill will evaluate the implementation against `spec.md` + `plan.md`
+2. The review skill will evaluate the implementation against `<slug>-spec.md` + `<slug>-plan.md`
 3. If concerns are found, the review skill handles the fix loop (max 3 cycles)
 4. When review passes:
    - Update `build-state.json`: `phase_status` to `"awaiting_approval"`

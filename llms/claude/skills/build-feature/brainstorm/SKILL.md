@@ -9,14 +9,14 @@ Ask the user one question at a time to iteratively build a step-by-step specific
 Each question should build on the previous response, gradually refining the spec.
 Do **not** skip steps or ask multiple questions at once.
 
-Once the full spec is developed, save it to a file called `spec.md`.
+Once the full spec is developed, save it to a file called `<slug>-spec.md` (read `build-state.json` for the slug and `plans_dir`). If no `build-state.json` exists, ask the user for a short name and save as `<name>-spec.md` in the current directory.
 
 Then, ask the user:
-"Do you want to create a GitHub repository and push the generated `spec.md` file there?"
+"Do you want to create a GitHub repository and push the generated spec file there?"
 
 If the user agrees:
 - Initialize a git repository (if not already initialized)
-- Commit the `spec.md` file
+- Commit the spec file
 - Create a new GitHub repository
 - Push the commit to the new remote repo
 
