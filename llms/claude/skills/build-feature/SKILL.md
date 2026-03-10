@@ -11,7 +11,7 @@ Orchestrate the full development workflow for a feature. Manage state via `build
 ## Phase Flow
 
 ```
-init → brainstorm → review-design ⇄ fix → plan → execute → review-impl ⇄ fix → finalize → done
+init → brainstorm → review-design ⇄ fix → plan → execute → review-impl ⇄ fix → collect-todos → finalize → done
 ```
 
 ## On Invocation
@@ -40,7 +40,8 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
   "artifacts": {
     "spec": null,
     "plan": null,
-    "todo": null
+    "todo": null,
+    "backlog": null
   },
   "created_at": "<current ISO timestamp>",
   "updated_at": "<current ISO timestamp>"
@@ -95,12 +96,21 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 3. If concerns are found, the review skill handles the fix loop (max 3 cycles)
 4. When review passes:
    - Update `build-state.json`: `phase_status` to `"awaiting_approval"`
-   - Tell the user: "Implementation review passed. Ready to finalize?"
-5. On approval: update `phase` to `"finalize"`, `phase_status` to `"in_progress"`, proceed to Phase 6
+   - Tell the user: "Implementation review passed. Ready to collect TODOs?"
+5. On approval: update `phase` to `"collect-todos"`, `phase_status` to `"in_progress"`, proceed to Phase 6
 
-## Phase 6 — Finalize
+## Phase 6 — Collect TODOs
 
-1. Stage implementation changes only — do **not** `git add` plan artifacts (`*-spec.md`, `*-plan.md`, `*-todo.md`) or `build-state.json`. The user decides whether to track those in git.
+1. Invoke the `collect-todos` skill
+2. The skill scans changes introduced by the feature branch for TODO comments, classifies them, and generates `<plans_dir>/<slug>-backlog.md`
+3. When complete:
+   - Update `build-state.json`: set `artifacts.backlog` to `"<slug>-backlog.md"` (or `null` if no items found), `phase_status` to `"awaiting_approval"`
+   - Tell the user: "Backlog collected. Ready to finalize?"
+4. On approval: update `phase` to `"finalize"`, `phase_status` to `"in_progress"`, proceed to Phase 7
+
+## Phase 7 — Finalize
+
+1. Stage implementation changes only — do **not** `git add` plan artifacts (`*-spec.md`, `*-plan.md`, `*-todo.md`, `*-backlog.md`) or `build-state.json`. The user decides whether to track those in git.
 2. Commit using conventional commit format (see `docs/git.md`):
    - Use `feat:` prefix with a concise description of the feature
    - Add `#pr` tag since this is the feature branch
