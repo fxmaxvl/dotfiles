@@ -27,3 +27,4 @@ When you need specific conventions, read the relevant file:
 - **Testing**: For testing requirements and TDD process, read `llms/claude/docs/testing.md`
 - **Architecture**: For architectural patterns and design principles, read `llms/claude/docs/architecture.md`
 - **Git**: For commit message format and conventions, read `llms/claude/docs/git.md`
+- **TypeScript/JS**: For TypeScript and JavaScript conventions, read `llms/claude/docs/typescript.md`
