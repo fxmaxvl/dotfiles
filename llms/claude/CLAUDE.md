@@ -23,8 +23,8 @@ Whenever you build out a new project and specifically start a new Claude.md - yo
 
 When you need specific conventions, read the relevant file:
 
-- **Development**: For coding standards, style rules, and implementation guidelines, read `llms/claude/docs/dev.md`
-- **Testing**: For testing requirements and TDD process, read `llms/claude/docs/testing.md`
-- **Architecture**: For architectural patterns and design principles, read `llms/claude/docs/architecture.md`
-- **Git**: For commit message format and conventions, read `llms/claude/docs/git.md`
-- **TypeScript/JS**: For TypeScript and JavaScript conventions, read `llms/claude/docs/typescript.md`
+- **Development**: For coding standards, style rules, and implementation guidelines, read `docs/dev.md`
+- **Testing**: For testing requirements and TDD process, read `docs/testing.md`
+- **Architecture**: For architectural patterns and design principles, read `docs/architecture.md`
+- **Git**: For commit message format and conventions, read `docs/git.md`
+- **TypeScript/JS**: For TypeScript and JavaScript conventions, read `docs/typescript.md`
