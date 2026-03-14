@@ -15,7 +15,7 @@ Read `build-state.json` to find the `slug` and `plans_dir`. Review the implement
 - Flag any requirement that is missing or partially implemented
 
 ### 2. Dev conventions
-- Check against the project's `docs/dev.md` conventions:
+- Check against the project's `conventions/dev.md` conventions:
   - All code files start with `ABOUTME:` comments (2 lines)
   - Code style matches surrounding code
   - No unrelated changes
@@ -24,7 +24,7 @@ Read `build-state.json` to find the `slug` and `plans_dir`. Review the implement
   - Comments are evergreen (no temporal references)
 
 ### 3. Test coverage
-- Check against `docs/testing.md` conventions:
+- Check against `conventions/testing.md` conventions:
   - Unit tests exist for new functionality
   - Integration tests exist
   - End-to-end tests exist

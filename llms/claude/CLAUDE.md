@@ -21,10 +21,10 @@ Whenever you build out a new project and specifically start a new Claude.md - yo
 
 ## Conventions
 
-When you need specific conventions, read the relevant file:
+**IMPORTANT: Before performing any action that may have documented conventions (committing, writing code, writing tests, etc.), you MUST read the relevant convention doc first.** Do not infer conventions from git history or other heuristics — always check the doc. Convention docs are relative to this file:
 
-- **Development**: For coding standards, style rules, and implementation guidelines, read `docs/dev.md`
-- **Testing**: For testing requirements and TDD process, read `docs/testing.md`
-- **Architecture**: For architectural patterns and design principles, read `docs/architecture.md`
-- **Git**: For commit message format and conventions, read `docs/git.md`
-- **TypeScript/JS**: For TypeScript and JavaScript conventions, read `docs/typescript.md`
+- **Development**: `./conventions/dev.md` — coding standards, style rules, implementation guidelines
+- **Testing**: `./conventions/testing.md` — testing requirements and TDD process
+- **Architecture**: `./conventions/architecture.md` — architectural patterns and design principles
+- **Git**: `./conventions/git.md` — commit message format and conventions
+- **TypeScript/JS**: `./conventions/typescript.md` — TypeScript and JavaScript conventions

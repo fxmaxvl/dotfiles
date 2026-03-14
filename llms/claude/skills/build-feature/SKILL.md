@@ -150,7 +150,7 @@ On approval: update `phase` to `"review-design"`, `phase_status` to `"in_progres
 ## Phase 7 — Finalize
 
 1. Stage implementation changes only — do **not** `git add` plan artifacts (`*-spec.md`, `*-plan.md`, `*-todo.md`, `*-backlog.md`) or `build-state.json`. The user decides whether to track those in git.
-2. Commit using conventional commit format (see `docs/git.md`):
+2. Commit using conventional commit format (see `conventions/git.md`):
    - Use `feat:` prefix with a concise description of the feature
    - If `jira.enabled`, include the ticket key in the commit message (e.g., `feat(PROJ-123): add dark mode`)
    - Add `#pr` tag since this is the feature branch
