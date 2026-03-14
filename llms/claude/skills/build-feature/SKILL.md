@@ -2,8 +2,8 @@
 name: build-feature
 description: Orchestrate the full brainstorm → plan → execute workflow with review gates between phases.
 disable-model-invocation: true
-argument-hint: [idea description]
-allowed-tools: Read, Write, Grep, Glob, Bash(git *)
+argument-hint: [idea description or Jira ticket URL]
+allowed-tools: Read, Write, Grep, Glob, Bash(git *), mcp__*__jira__*
 ---
 
 Orchestrate the full development workflow for a feature. Manage state via `build-state.json` and delegate to existing skills with approval gates between each phase.
@@ -22,13 +22,19 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 
 ## Phase 0 — Init
 
-1. Derive a short kebab-case slug from the idea (e.g., "add dark mode" → "dark-mode")
-2. Ask the user: "Where should I store plan artifacts? Default: `docs/plans/`"
+1. **Detect Jira ticket:** Check if `$ARGUMENTS` contains a Jira ticket URL (e.g., `https://<domain>.atlassian.net/browse/PROJ-123` or similar). If it does:
+   - Extract the ticket key (e.g., `PROJ-123`)
+   - Invoke the `jira` sub-skill to verify Jira MCP tools are available. If not available, stop.
+   - Set `jira.ticket_key` in state (see below)
+   - Use the ticket key as slug prefix: `<ticket-key>-<short-description>` (e.g., `PROJ-123-dark-mode`)
+   - Invoke the `jira` sub-skill: `transition-to(ticket_key, "In Progress")`
+2. If no Jira ticket: derive a short kebab-case slug from the idea as before (e.g., "add dark mode" → "dark-mode")
+3. Ask the user: "Where should I store plan artifacts? Default: `docs/plans/`"
    - If the user provides a path, use it
    - If the user accepts the default (or just says "yes"/"ok"/etc.), use `docs/plans/`
    - Create the directory if it doesn't exist
-3. Create and switch to branch `feat/<slug>` from master
-4. Create `build-state.json` in the project root:
+4. Create and switch to branch `feat/<slug>` from master
+5. Create `build-state.json` in the project root:
 
 ```json
 {
@@ -37,6 +43,12 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
   "plans_dir": "<user-chosen or docs/plans/>",
   "phase": "brainstorm",
   "phase_status": "in_progress",
+  "jira": {
+    "enabled": false,
+    "ticket_key": null,
+    "ticket_url": null,
+    "pending_questions": null
+  },
   "artifacts": {
     "spec": null,
     "plan": null,
@@ -48,18 +60,45 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 }
 ```
 
-5. Proceed to Phase 1.
+   - If a Jira ticket was detected, set `jira.enabled` to `true`, `jira.ticket_key` to the extracted key, and `jira.ticket_url` to the original URL.
+
+6. Proceed to Phase 1.
 
 **Artifact naming convention:** All artifact filenames are prefixed with the slug. For example, if the slug is `dark-mode`, the artifacts are `dark-mode-spec.md`, `dark-mode-plan.md`, and `dark-mode-todo.md`. All artifact paths are relative to `plans_dir`. For example, if `plans_dir` is `docs/plans/` and slug is `dark-mode`, then the spec lives at `docs/plans/dark-mode-spec.md`.
 
 ## Phase 1 — Brainstorm
 
+### Resuming from `waiting_answer`
+If `build-state.json` has `phase` = `"brainstorm"` and `phase_status` = `"waiting_answer"`:
+1. Invoke the `jira` sub-skill: `check-for-answers(jira.ticket_key, jira.pending_questions)`
+2. If all questions are answered in Jira: clear `jira.pending_questions`, set `phase_status` to `"in_progress"`, and continue the brainstorm with the new answers
+3. If some questions are still unanswered in Jira: show the user the pending questions and ask — "No answer on Jira yet for these. Do you have the answers yourself, or should we keep waiting?"
+   - If the user provides answers: use them, clear `jira.pending_questions`, set `phase_status` to `"in_progress"`, and continue the brainstorm
+   - If the user wants to keep waiting: remain in `waiting_answer`
+
+### If `jira.enabled` is `true`:
+1. Invoke the `jira` sub-skill: `read-ticket(jira.ticket_key)` to fetch the ticket's description, comments, and context
+2. Synthesize an overall description from the ticket content
+3. Invoke the `brainstorm` skill with this synthesized description as the idea
+   - The brainstorm skill may still ask clarifying questions if needed — but it starts from a much richer context
+4. The brainstorm skill produces the spec (saved to `<plans_dir>/<slug>-spec.md`)
+
+### If `jira.enabled` is `false`:
 1. Invoke the `brainstorm` skill with the idea from `build-state.json`
 2. The brainstorm skill will ask questions one at a time and produce the spec (instruct it to save to `<plans_dir>/<slug>-spec.md`)
-3. When `<plans_dir>/<slug>-spec.md` is detected:
+
+### Escalating questions to Jira
+If during brainstorm the user cannot answer a clarifying question and asks to post it to Jira (`jira.enabled` must be `true`):
+1. Invoke the `jira` sub-skill: `ask-author(jira.ticket_key, questions)` — this tags the ticket author and posts the questions as a comment
+2. Save the questions to `jira.pending_questions` in `build-state.json`
+3. Set `phase_status` to `"waiting_answer"`
+4. Tell the user: "Questions posted to Jira ticket. Run `/build-feature` again later to check for answers."
+
+### In all cases:
+When `<plans_dir>/<slug>-spec.md` is detected:
    - Update `build-state.json`: set `artifacts.spec` to `"<slug>-spec.md"`, `phase_status` to `"awaiting_approval"`
    - Tell the user: "Spec complete. Ready to run design review?"
-4. On approval: update `phase` to `"review-design"`, `phase_status` to `"in_progress"`, proceed to Phase 2
+On approval: update `phase` to `"review-design"`, `phase_status` to `"in_progress"`, proceed to Phase 2
 
 ## Phase 2 — Review Design
 
@@ -113,10 +152,14 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 1. Stage implementation changes only — do **not** `git add` plan artifacts (`*-spec.md`, `*-plan.md`, `*-todo.md`, `*-backlog.md`) or `build-state.json`. The user decides whether to track those in git.
 2. Commit using conventional commit format (see `docs/git.md`):
    - Use `feat:` prefix with a concise description of the feature
+   - If `jira.enabled`, include the ticket key in the commit message (e.g., `feat(PROJ-123): add dark mode`)
    - Add `#pr` tag since this is the feature branch
 3. Push the branch to remote
-4. Update `build-state.json`: `phase` to `"done"`, `phase_status` to `"in_progress"`
-5. Tell the user: "Feature branch pushed. Build complete!"
+4. **If `jira.enabled` is `true`:**
+   - Invoke the `jira` sub-skill: `transition-to(jira.ticket_key, "To Review")`
+   - Invoke the `jira` sub-skill: `add-comment(jira.ticket_key, "PR: <pr_url>")`
+5. Update `build-state.json`: `phase` to `"done"`, `phase_status` to `"in_progress"`
+6. Tell the user: "Feature branch pushed. Build complete!"
 
 ## State Updates
 
