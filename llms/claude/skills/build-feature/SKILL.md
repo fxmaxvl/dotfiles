@@ -44,10 +44,10 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
    - Use the issue number as slug prefix: `gh-<number>-<short-description>` (e.g., `gh-12-token-refresh`)
 2. **Detect Jira ticket:** Check if `$ARGUMENTS` contains a Jira ticket URL (e.g., `https://<domain>.atlassian.net/browse/PROJ-123` or similar). If it does:
    - Extract the ticket key (e.g., `PROJ-123`)
-   - Invoke the `jira` sub-skill to verify Jira MCP tools are available. If not available, stop.
+   - Invoke the `jira` skill to verify Jira MCP tools are available. If not available, stop.
    - Set `jira.ticket_key` in state (see below)
    - Use the ticket key as slug prefix: `<ticket-key>-<short-description>` (e.g., `PROJ-123-dark-mode`)
-   - Invoke the `jira` sub-skill: `transition-to(ticket_key, "In Progress")`
+   - Invoke the `jira` skill: `transition-to(ticket_key, "In Progress")`
 3. If neither GitHub issue nor Jira ticket: derive a short kebab-case slug from the idea as before (e.g., "add dark mode" → "dark-mode")
 3. Ask the user: "Where should I store plan artifacts? Default: `docs/plans/`"
    - If the user provides a path, use it
@@ -94,14 +94,14 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 
 ### Resuming from `waiting_answer`
 If `build-state.json` has `phase` = `"brainstorm"` and `phase_status` = `"waiting_answer"`:
-1. Invoke the `jira` sub-skill: `check-for-answers(jira.ticket_key, jira.pending_questions)`
+1. Invoke the `jira` skill: `check-for-answers(jira.ticket_key, jira.pending_questions)`
 2. If all questions are answered in Jira: clear `jira.pending_questions`, set `phase_status` to `"in_progress"`, and continue the brainstorm with the new answers
 3. If some questions are still unanswered in Jira: show the user the pending questions and ask — "No answer on Jira yet for these. Do you have the answers yourself, or should we keep waiting?"
    - If the user provides answers: use them, clear `jira.pending_questions`, set `phase_status` to `"in_progress"`, and continue the brainstorm
    - If the user wants to keep waiting: remain in `waiting_answer`
 
 ### If `jira.enabled` is `true`:
-1. Invoke the `jira` sub-skill: `read-ticket(jira.ticket_key)` to fetch the ticket's description, comments, and context
+1. Invoke the `jira` skill: `read-ticket(jira.ticket_key)` to fetch the ticket's description, comments, and context
 2. Synthesize an overall description from the ticket content
 3. Invoke the `brainstorm` skill with this synthesized description as the idea
    - The brainstorm skill may still ask clarifying questions if needed — but it starts from a much richer context
@@ -113,7 +113,7 @@ If `build-state.json` has `phase` = `"brainstorm"` and `phase_status` = `"waitin
 
 ### Escalating questions to Jira
 If during brainstorm the user cannot answer a clarifying question and asks to post it to Jira (`jira.enabled` must be `true`):
-1. Invoke the `jira` sub-skill: `ask-author(jira.ticket_key, questions)` — this tags the ticket author and posts the questions as a comment
+1. Invoke the `jira` skill: `ask-author(jira.ticket_key, questions)` — this tags the ticket author and posts the questions as a comment
 2. Save the questions to `jira.pending_questions` in `build-state.json`
 3. Set `phase_status` to `"waiting_answer"`
 4. Tell the user: "Questions posted to Jira ticket. Run `/build-feature` again later to check for answers."
@@ -184,8 +184,8 @@ On approval: update `phase` to `"review-design"`, `phase_status` to `"in_progres
    - **If `github_issue.enabled` is `true`:** include `Closes #<github_issue.number>` in the PR body. This automatically closes the issue when the PR is merged.
    - Include a summary of the feature in the PR body
 5. **If `jira.enabled` is `true`:**
-   - Invoke the `jira` sub-skill: `transition-to(jira.ticket_key, "To Review")`
-   - Invoke the `jira` sub-skill: `add-comment(jira.ticket_key, "PR: <pr_url>")`
+   - Invoke the `jira` skill: `transition-to(jira.ticket_key, "To Review")`
+   - Invoke the `jira` skill: `add-comment(jira.ticket_key, "PR: <pr_url>")`
 6. Update `build-state.json`: `phase` to `"done"`, `phase_status` to `"in_progress"`
 7. Tell the user: "Feature branch pushed. Build complete!"
 
