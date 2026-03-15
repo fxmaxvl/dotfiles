@@ -19,6 +19,24 @@ Whenever you build out a new project and specifically start a new Claude.md - yo
 - **CRITICAL: Ask ONE question at a time. Never batch multiple questions into a single response. If you have 3 things to clarify, ask the first one, wait for the answer, then ask the next.** This is a hard rule, not a suggestion.
 - If you're having trouble with something, it's ok to stop and ask for help. Especially if it's something your human might be better at.
 
+## Skills
+
+Reusable skills live in `./skills/`. Each skill has a `SKILL.md` with frontmatter (name, description, optional model routing).
+
+### Entry points for feature work
+
+- **From GitHub**: `/gh-issue` pick → assigns + kicks off `/build-feature`
+- **From Jira**: `/jira` pick or URL → assigns + transitions to "In Progress" + kicks off `/build-feature`
+- **Direct**: `/build-feature <idea>` for ad-hoc features
+
+### Model routing
+
+Skills declare a `model` field in their frontmatter. Reasoning-heavy phases (brainstorm, review, plan) use **opus**; execution-focused phases (coding, scanning) use **sonnet**.
+
+### Workflow state
+
+`build-feature` persists state in `build-state.json` at the project root, allowing resume across sessions.
+
 ## Conventions
 
 **IMPORTANT: Before performing any action that may have documented conventions (committing, writing code, writing tests, etc.), you MUST read the relevant convention doc first.** Do not infer conventions from git history or other heuristics — always check the doc. Convention docs are relative to this file:
