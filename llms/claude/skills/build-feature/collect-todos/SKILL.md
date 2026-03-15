@@ -3,6 +3,7 @@ name: collect-todos
 description: Scan implementation changes for TODO comments and generate a backlog document.
 disable-model-invocation: true
 allowed-tools: Read, Write, Grep, Glob, Bash(git *)
+model: sonnet
 ---
 
 Scan the feature branch changes for `TODO` comments **that are related to this feature**. Ignore pre-existing TODOs that were not introduced or modified by this branch.

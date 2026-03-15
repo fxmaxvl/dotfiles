@@ -2,6 +2,7 @@
 name: do-todo
 description: Pick the next unchecked item from the todo file and implement it following the plan.
 disable-model-invocation: true
+model: sonnet
 ---
 
 Read `build-state.json` to find the `slug` and `plans_dir`.

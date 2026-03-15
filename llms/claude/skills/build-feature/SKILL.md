@@ -8,6 +8,22 @@ allowed-tools: Read, Write, Grep, Glob, Bash(git *), mcp__*__jira__*
 
 Orchestrate the full development workflow for a feature. Manage state via `build-state.json` and delegate to existing skills with approval gates between each phase.
 
+## Model Routing
+
+Each sub-skill declares a `model` field in its SKILL.md frontmatter. When delegating to a sub-skill via the Agent tool, **always pass the declared model**. The current routing:
+
+| Sub-skill | Model | Rationale |
+|-----------|-------|-----------|
+| `brainstorm` | opus | Conversational nuance, iterative Q&A |
+| `review-design` | opus | Critical architectural analysis |
+| `plan` | opus | Deep reasoning for TDD blueprints |
+| `do-todo` | sonnet | Fast, execution-focused coding |
+| `review-impl` | opus | Critical code review |
+| `collect-todos` | sonnet | Mechanical scanning task |
+| `finalize` (Phase 7) | sonnet | Mechanical git/PR operations |
+
+When invoking sub-skills as agents, set the `model` parameter accordingly. For example: `Agent(model: "sonnet", ...)` for `do-todo`.
+
 ## Phase Flow
 
 ```

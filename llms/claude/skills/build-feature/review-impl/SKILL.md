@@ -3,6 +3,7 @@ name: review-impl
 description: Review implementation against spec and plan for completeness and quality.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash(git *)
+model: opus
 ---
 
 Read `build-state.json` to find the `slug` and `plans_dir`. Review the implementation by comparing what was built against `<plans_dir>/<slug>-spec.md` and `<plans_dir>/<slug>-plan.md`. Use git diff from the feature branch to see all changes.

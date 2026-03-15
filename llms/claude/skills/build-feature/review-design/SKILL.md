@@ -2,6 +2,7 @@
 name: review-design
 description: Review a spec for architecture completeness, edge cases, and missing requirements.
 disable-model-invocation: true
+model: opus
 ---
 
 Read `build-state.json` to find the `slug` and `plans_dir`. Review `<plans_dir>/<slug>-spec.md` and evaluate it against the following criteria. For each criterion, state whether it passes or has concerns.
