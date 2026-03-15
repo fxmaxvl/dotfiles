@@ -16,7 +16,7 @@ Whenever you build out a new project and specifically start a new Claude.md - yo
 ## Getting help
 
 - ALWAYS ask for clarification rather than making assumptions.
-- When asking clarifying questions, ask ONE question at a time. Do not batch multiple questions.
+- **CRITICAL: Ask ONE question at a time. Never batch multiple questions into a single response. If you have 3 things to clarify, ask the first one, wait for the answer, then ask the next.** This is a hard rule, not a suggestion.
 - If you're having trouble with something, it's ok to stop and ask for help. Especially if it's something your human might be better at.
 
 ## Conventions
