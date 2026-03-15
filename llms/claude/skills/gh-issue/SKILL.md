@@ -3,10 +3,6 @@ name: gh-issue
 description: Create GitHub issues or pick existing ones to work on. Auto-generates titles/labels for new issues, classifies existing ones, and kicks off build-feature.
 argument-hint: [optional: "pick", "pick bug", or issue description]
 ---
-
-ABOUTME: Skill for creating and picking GitHub issues with auto-generated titles, labels, and descriptions.
-ABOUTME: Detects repo from git remote, classifies issues by type, and integrates with build-feature workflow.
-
 Manage GitHub issues on the current repository. Two modes: **create** (capture something to track) and **pick** (select an existing issue to work on).
 
 ## Mode Detection
