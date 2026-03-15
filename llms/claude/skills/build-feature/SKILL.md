@@ -2,7 +2,7 @@
 name: build-feature
 description: Orchestrate the full brainstorm → plan → execute workflow with review gates between phases.
 disable-model-invocation: true
-argument-hint: [idea description or Jira ticket URL]
+argument-hint: [idea description, Jira ticket URL, or GH-ISSUE:<number>]
 allowed-tools: Read, Write, Grep, Glob, Bash(git *), mcp__*__jira__*
 ---
 
@@ -22,13 +22,17 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 
 ## Phase 0 — Init
 
-1. **Detect Jira ticket:** Check if `$ARGUMENTS` contains a Jira ticket URL (e.g., `https://<domain>.atlassian.net/browse/PROJ-123` or similar). If it does:
+1. **Detect GitHub issue:** Check if `$ARGUMENTS` contains a `GH-ISSUE:<number>` marker. If it does:
+   - Extract the issue number
+   - Set `github_issue.enabled` to `true` and `github_issue.number` to the extracted number in state (see below)
+   - Use the issue number as slug prefix: `gh-<number>-<short-description>` (e.g., `gh-12-token-refresh`)
+2. **Detect Jira ticket:** Check if `$ARGUMENTS` contains a Jira ticket URL (e.g., `https://<domain>.atlassian.net/browse/PROJ-123` or similar). If it does:
    - Extract the ticket key (e.g., `PROJ-123`)
    - Invoke the `jira` sub-skill to verify Jira MCP tools are available. If not available, stop.
    - Set `jira.ticket_key` in state (see below)
    - Use the ticket key as slug prefix: `<ticket-key>-<short-description>` (e.g., `PROJ-123-dark-mode`)
    - Invoke the `jira` sub-skill: `transition-to(ticket_key, "In Progress")`
-2. If no Jira ticket: derive a short kebab-case slug from the idea as before (e.g., "add dark mode" → "dark-mode")
+3. If neither GitHub issue nor Jira ticket: derive a short kebab-case slug from the idea as before (e.g., "add dark mode" → "dark-mode")
 3. Ask the user: "Where should I store plan artifacts? Default: `docs/plans/`"
    - If the user provides a path, use it
    - If the user accepts the default (or just says "yes"/"ok"/etc.), use `docs/plans/`
@@ -43,6 +47,10 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
   "plans_dir": "<user-chosen or docs/plans/>",
   "phase": "brainstorm",
   "phase_status": "in_progress",
+  "github_issue": {
+    "enabled": false,
+    "number": null
+  },
   "jira": {
     "enabled": false,
     "ticket_key": null,
@@ -152,14 +160,18 @@ On approval: update `phase` to `"review-design"`, `phase_status` to `"in_progres
 1. Stage implementation changes only — do **not** `git add` plan artifacts (`*-spec.md`, `*-plan.md`, `*-todo.md`, `*-backlog.md`) or `build-state.json`. The user decides whether to track those in git.
 2. Commit using conventional commit format (see `conventions/git.md`):
    - Use `feat:` prefix with a concise description of the feature
+   - If `github_issue.enabled`, include the issue number in the commit message (e.g., `feat(#12): fix token refresh`)
    - If `jira.enabled`, include the ticket key in the commit message (e.g., `feat(PROJ-123): add dark mode`)
    - Add `#pr` tag since this is the feature branch
 3. Push the branch to remote
-4. **If `jira.enabled` is `true`:**
+4. Create a PR using `gh pr create`:
+   - **If `github_issue.enabled` is `true`:** include `Closes #<github_issue.number>` in the PR body. This automatically closes the issue when the PR is merged.
+   - Include a summary of the feature in the PR body
+5. **If `jira.enabled` is `true`:**
    - Invoke the `jira` sub-skill: `transition-to(jira.ticket_key, "To Review")`
    - Invoke the `jira` sub-skill: `add-comment(jira.ticket_key, "PR: <pr_url>")`
-5. Update `build-state.json`: `phase` to `"done"`, `phase_status` to `"in_progress"`
-6. Tell the user: "Feature branch pushed. Build complete!"
+6. Update `build-state.json`: `phase` to `"done"`, `phase_status` to `"in_progress"`
+7. Tell the user: "Feature branch pushed. Build complete!"
 
 ## State Updates
 
