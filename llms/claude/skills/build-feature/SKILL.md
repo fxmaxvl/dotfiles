@@ -54,7 +54,12 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
    - Invoke the `jira` skill: `transition-to(ticket_key, "In Progress")`
 3. If neither GitHub issue nor Jira ticket: derive a short kebab-case slug from the idea as before (e.g., "add dark mode" → "dark-mode")
 4. Create the artifacts directory: `mkdir -p <project_root>/.claude/.build-feature-temp/`
-5. Create and switch to branch `feat/<slug>` from master
+5. **Branch selection:**
+   - Check the current git branch
+   - If on `master` (or the repo's main branch): create and switch to `feat/<slug>` from master
+   - If on a non-master branch (e.g., `feat/something`): ask the user — "You're currently on `<branch>`. Do you want to continue working here, or create a new branch `feat/<slug>` from master?"
+     - If the user chooses to continue: stay on the current branch, use the current branch name to derive the slug (strip `feat/` prefix if present)
+     - If the user chooses a new branch: create and switch to `feat/<slug>` from master
 6. Create `.claude/.build-feature-temp/build-state.json`:
 
 ```json
