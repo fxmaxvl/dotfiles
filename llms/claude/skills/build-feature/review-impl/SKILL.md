@@ -6,7 +6,7 @@ allowed-tools: Read, Grep, Glob, Bash(git *)
 model: opus
 ---
 
-Read `build-state.json` to find the `slug` and `plans_dir`. Review the implementation by comparing what was built against `<plans_dir>/<slug>-spec.md` and `<plans_dir>/<slug>-plan.md`. Use git diff from the feature branch to see all changes.
+Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Review the implementation by comparing what was built against `.claude/.build-feature-temp/<slug>-spec.md` and `.claude/.build-feature-temp/<slug>-plan.md`. Use git diff from the feature branch to see all changes.
 
 ## Review Criteria
 

@@ -12,7 +12,7 @@ Do **not** skip steps or ask multiple questions at once.
 
 ## Jira-sourced ideas
 
-If the idea was sourced from a Jira ticket (check `build-state.json` for `jira.enabled === true`), you will receive a pre-synthesized description built from the ticket's description and comments. This gives you a richer starting point — you may need fewer clarifying questions, but still ask if anything is ambiguous or underspecified. Do not re-fetch the Jira ticket; the parent `build-feature` skill already did that.
+If the idea was sourced from a Jira ticket (check `.claude/.build-feature-temp/build-state.json` for `jira.enabled === true`), you will receive a pre-synthesized description built from the ticket's description and comments. This gives you a richer starting point — you may need fewer clarifying questions, but still ask if anything is ambiguous or underspecified. Do not re-fetch the Jira ticket; the parent `build-feature` skill already did that.
 
 ## When the user can't answer a question
 
@@ -20,7 +20,7 @@ If the user says they don't know the answer and asks to post the question to Jir
 
 ## Output
 
-Once the full spec is developed, save it to a file called `<slug>-spec.md` (read `build-state.json` for the slug and `plans_dir`). If no `build-state.json` exists, ask the user for a short name and save as `<name>-spec.md` in the current directory.
+Once the full spec is developed, save it to `.claude/.build-feature-temp/<slug>-spec.md` (read `.claude/.build-feature-temp/build-state.json` for the slug). If no state file exists, ask the user for a short name and save as `<name>-spec.md` in the current directory.
 
 Do **not** commit or push the spec file automatically — the user decides whether to track plan artifacts in git.
 

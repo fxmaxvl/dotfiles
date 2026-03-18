@@ -10,7 +10,7 @@ Scan the feature branch changes for `TODO` comments **that are related to this f
 
 ## Input
 
-Read `build-state.json` to find the `slug` and `plans_dir`. Also read `<plans_dir>/<slug>-spec.md` to understand the feature context — you'll need this to filter relevant vs. unrelated TODOs.
+Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Also read `.claude/.build-feature-temp/<slug>-spec.md` to understand the feature context — you'll need this to filter relevant vs. unrelated TODOs.
 
 ## Steps
 
@@ -43,7 +43,7 @@ For each found comment, classify the reason:
 
 ### 4. Generate backlog document
 
-Write to `<plans_dir>/<slug>-backlog.md`:
+Write to `.claude/.build-feature-temp/<slug>-backlog.md`:
 
 ```markdown
 # <slug> — Backlog
@@ -82,5 +82,5 @@ Items discovered during implementation of `<slug>`. All items are labeled with t
 
 ## Output
 
-- Backlog document: `<plans_dir>/<slug>-backlog.md`
-- Update `build-state.json`: set `artifacts.backlog` to `"<slug>-backlog.md"`
+- Backlog document: `.claude/.build-feature-temp/<slug>-backlog.md`
+- Update `.claude/.build-feature-temp/build-state.json`: set `artifacts.backlog` to `"<slug>-backlog.md"`

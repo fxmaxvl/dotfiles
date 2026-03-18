@@ -6,39 +6,32 @@ disable-model-invocation: true
 
 Sync Claude configuration from this dotfiles repo to the user's `~/.claude/` directory.
 
-**Source:** The `llms/claude/` directory in this repo (resolve its absolute path from the repo root).
-**Target:** `~/.claude/`
+## How to run
 
-## Steps
+Run the helper script from the skill directory:
 
-### 1. Sync skills (symlinks)
+```bash
+bash skills/sync-dotfiles/sync.sh
+```
 
-For each subdirectory in `<source>/skills/` (skip `sync-dotfiles` — it should not sync itself):
-- If `~/.claude/skills/<name>` is already a correct symlink → skip, report "already linked"
-- If `~/.claude/skills/<name>` is a symlink pointing elsewhere → remove and re-create, report "updated"
-- If `~/.claude/skills/<name>` exists but is NOT a symlink → warn the user and skip (don't overwrite real directories)
-- If `~/.claude/skills/<name>` doesn't exist → create symlink, report "linked"
+The script handles everything automatically:
+- **Skills**: symlinks each skill subdirectory (except `sync-dotfiles` itself) into `~/.claude/skills/`
+- **Docs**: symlinks each doc file into `~/.claude/docs/`
+- **Stale cleanup**: removes symlinks that point back to source but no longer have a matching entry
+- **CLAUDE.md**: copies if missing, skips if identical
 
-Create `~/.claude/skills/` if it doesn't exist.
+## Interactive resolution (exit code 2)
 
-Then clean up stale symlinks: for each symlink in `~/.claude/skills/` that points into `<source>/skills/` but whose name does NOT match a current top-level subdirectory in `<source>/skills/`, remove it and report "removed (stale)".
+If `CLAUDE.md` differs between source and target, the script exits with code **2** and prints a unified diff. When this happens, ask the user:
 
-### 2. Sync docs (symlinks)
+- **a)** Replace with dotfiles version — run: `cp <SOURCE> <TARGET>` (paths printed by the script)
+- **b)** Keep existing version — no action needed
+- **c)** Manual merge — show both file contents side-by-side and let the user decide
 
-For each file in `<source>/docs/`:
-- Same logic as skills above, but for individual files
-- Create `~/.claude/docs/` if it doesn't exist
+## Dry run
 
-### 3. Sync CLAUDE.md (interactive merge)
+```bash
+bash skills/sync-dotfiles/sync.sh --dry-run
+```
 
-Compare `<source>/CLAUDE.md` with `~/.claude/CLAUDE.md`:
-- If target doesn't exist → copy the source file, report "created"
-- If target exists and is identical → skip, report "already up to date"
-- If target exists and differs → show the diff to the user and ask:
-  - **a)** Replace with dotfiles version
-  - **b)** Keep existing version
-  - **c)** Open side-by-side and let me merge manually (show both contents, then ask user for the final version)
-
-### 4. Report summary
-
-After all steps, print a summary table showing what was linked, updated, skipped, or warned about.
+Shows what would happen without making changes.

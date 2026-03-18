@@ -35,7 +35,7 @@ Skills declare a `model` field in their frontmatter. Reasoning-heavy phases (bra
 
 ### Workflow state
 
-`build-feature` persists state in `build-state.json` at the project root, allowing resume across sessions.
+`build-feature` persists state and all artifacts (spec, plan, todo, backlog) in `.claude/.build-feature-temp/`, allowing resume across sessions. The state file is cleaned up after finalization.
 
 ## Conventions
 

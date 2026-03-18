@@ -5,7 +5,7 @@ disable-model-invocation: true
 model: opus
 ---
 
-Read `build-state.json` to find the `slug` and `plans_dir`. Review `<plans_dir>/<slug>-spec.md` and evaluate it against the following criteria. For each criterion, state whether it passes or has concerns.
+Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Review `.claude/.build-feature-temp/<slug>-spec.md` and evaluate it against the following criteria. For each criterion, state whether it passes or has concerns.
 
 ## Review Criteria
 

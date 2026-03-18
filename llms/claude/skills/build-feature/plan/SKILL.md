@@ -21,6 +21,6 @@ When a step requires a temporary solution, workaround, or deferred work (e.g., w
 
 The `(<slug>)` tag ties the comment to the feature so it can be collected automatically during the collect-todos phase. Every deferred item must have a comment in the code — no silent shortcuts.
 
-Read `build-state.json` to find the `slug` and `plans_dir`. Store the plan in `<plans_dir>/<slug>-plan.md`. Also create `<plans_dir>/<slug>-todo.md` to keep state.
+Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Store the plan in `.claude/.build-feature-temp/<slug>-plan.md`. Also create `.claude/.build-feature-temp/<slug>-todo.md` to keep state.
 
-The spec is in: `<plans_dir>/<slug>-spec.md`
+The spec is in: `.claude/.build-feature-temp/<slug>-spec.md`
