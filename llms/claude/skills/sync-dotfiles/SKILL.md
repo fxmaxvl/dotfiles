@@ -1,6 +1,6 @@
 ---
 name: sync-dotfiles
-description: Sync Claude config (skills, docs, CLAUDE.md) from dotfiles to ~/.claude/ using symlinks and interactive merge.
+description: Sync Claude config (skills, conventions, CLAUDE.md) from dotfiles to ~/.claude/ using symlinks and interactive merge.
 disable-model-invocation: true
 ---
 
@@ -16,7 +16,7 @@ bash skills/sync-dotfiles/sync.sh
 
 The script handles everything automatically:
 - **Skills**: symlinks each skill subdirectory (except `sync-dotfiles` itself) into `~/.claude/skills/`
-- **Docs**: symlinks each doc file into `~/.claude/docs/`
+- **Conventions**: symlinks each convention file into `~/.claude/conventions/`
 - **Stale cleanup**: removes symlinks that point back to source but no longer have a matching entry
 - **CLAUDE.md**: copies if missing, skips if identical
 

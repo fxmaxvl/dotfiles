@@ -1,7 +1,7 @@
 ---
 name: build-feature
 description: Orchestrate the full brainstorm → plan → execute workflow with review gates between phases.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: [idea description, Jira ticket URL, or GH-ISSUE:<number>]
 allowed-tools: Read, Write, Grep, Glob, Bash(git *), mcp__*__jira__*
 ---

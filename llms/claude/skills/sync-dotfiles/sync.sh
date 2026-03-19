@@ -132,8 +132,8 @@ echo "=== Syncing skills ==="
 sync_symlinks "$SOURCE/skills" "$TARGET/skills" "dir" "sync-dotfiles"
 
 echo ""
-echo "=== Syncing docs ==="
-sync_symlinks "$SOURCE/docs" "$TARGET/docs" "file"
+echo "=== Syncing conventions ==="
+sync_symlinks "$SOURCE/conventions" "$TARGET/conventions" "file"
 
 echo ""
 echo "=== Syncing CLAUDE.md ==="
