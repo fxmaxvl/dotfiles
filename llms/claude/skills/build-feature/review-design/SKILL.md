@@ -2,7 +2,7 @@
 name: review-design
 description: Review a spec for architecture completeness, edge cases, and missing requirements.
 disable-model-invocation: true
-model: opus
+model: haiku
 ---
 
 Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Review `.claude/.build-feature-temp/<slug>-spec.md` and evaluate it against the following criteria. For each criterion, state whether it passes or has concerns.

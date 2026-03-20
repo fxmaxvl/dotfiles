@@ -2,7 +2,7 @@
 name: plan
 description: Draft a detailed TDD blueprint and break it into iterative test-driven implementation prompts from the spec.
 disable-model-invocation: true
-model: opus
+model: haiku
 ---
 
 Draft a detailed, step-by-step blueprint for building this project. Then, once you have a solid plan, break it down into small, iterative chunks that build on each other. Look at these chunks and then go another round to break it into small steps. Review the results and make sure that the steps are small enough to be implemented safely with strong testing, but big enough to move the project forward. Iterate until you feel that the steps are right sized for this project.

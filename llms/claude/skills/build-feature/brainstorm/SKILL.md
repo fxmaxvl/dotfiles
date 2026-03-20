@@ -3,7 +3,7 @@ name: brainstorm
 description: Iteratively build a step-by-step specification for an idea through guided Q&A.
 disable-model-invocation: true
 argument-hint: [idea description]
-model: opus
+model: haiku
 ---
 
 Ask the user one question at a time to iteratively build a step-by-step specification for their idea.
