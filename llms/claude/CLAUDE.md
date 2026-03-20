@@ -46,3 +46,4 @@ Skills declare a `model` field in their frontmatter. Reasoning-heavy phases (bra
 - **Architecture**: `./conventions/architecture.md` — architectural patterns and design principles
 - **Git**: `./conventions/git.md` — commit message format and conventions
 - **TypeScript/JS**: `./conventions/typescript.md` — TypeScript and JavaScript conventions
+- **Code Review**: `./conventions/code-review.md` — what to check when reviewing code
