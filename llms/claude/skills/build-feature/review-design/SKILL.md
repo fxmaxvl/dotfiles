@@ -7,7 +7,13 @@ model: haiku
 
 Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Review `.claude/.build-feature-temp/<slug>-spec.md` and evaluate it against the following criteria. For each criterion, state whether it passes or has concerns.
 
+If `.claude/.build-feature-temp/<slug>-qa.md` exists, read it as well — use it to check that the spec faithfully represents what the user said during brainstorm, and flag any requirements that were mentioned in the Q&A but are missing or misrepresented in the spec.
+
 ## Review Criteria
+
+### 0. Q&A faithfulness (if `<slug>-qa.md` exists)
+- Does the spec reflect what the user actually said during brainstorm?
+- Are there constraints or requirements from the Q&A answers that didn't make it into the spec?
 
 ### 1. Architecture completeness
 - Are all major components identified?

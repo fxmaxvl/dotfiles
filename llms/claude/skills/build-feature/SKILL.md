@@ -16,17 +16,18 @@ All build artifacts (spec, plan, todo, backlog, build-state.json) live in `<proj
 
 Each sub-skill declares a `model` field in its SKILL.md frontmatter. When delegating to a sub-skill via the Agent tool, **always pass the declared model**. The current routing:
 
-| Sub-skill | Model | Rationale |
-|-----------|-------|-----------|
-| `brainstorm` | opus | Conversational nuance, iterative Q&A |
-| `review-design` | opus | Critical architectural analysis |
-| `plan` | opus | Deep reasoning for TDD blueprints |
-| `do-todo` | sonnet | Fast, execution-focused coding |
-| `review-impl` | opus | Critical code review |
-| `collect-todos` | sonnet | Mechanical scanning task |
-| `finalize` (Phase 7) | sonnet | Mechanical git/PR operations |
+| Sub-skill | Invocation | Model | Rationale |
+|-----------|------------|-------|-----------|
+| `brainstorm` (gather) | Skill tool (inline) | — | Interactive Q&A — must stay in main conversation |
+| `brainstorm/generate` | Agent tool | opus | Spec synthesis from Q&A — reasoning-heavy, no interaction needed |
+| `review-design` | Agent tool | opus | Critical architectural analysis |
+| `plan` | Agent tool | opus | Deep reasoning for TDD blueprints |
+| `do-todo` | Agent tool | sonnet | Fast, execution-focused coding |
+| `review-impl` | Agent tool | opus | Critical code review |
+| `collect-todos` | Agent tool | sonnet | Mechanical scanning task |
+| `finalize` (Phase 7) | Agent tool | sonnet | Mechanical git/PR operations |
 
-When invoking sub-skills as agents, set the `model` parameter accordingly. For example: `Agent(model: "sonnet", ...)` for `do-todo`.
+When invoking sub-skills as agents, set the `model` parameter accordingly. For example: `Agent(model: "sonnet", ...)` for `do-todo`. The `brainstorm` gather phase is the only sub-skill invoked inline via the Skill tool — do **not** wrap it in an Agent call.
 
 ## Phase Flow
 
@@ -39,6 +40,7 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 1. Check if `.claude/.build-feature-temp/build-state.json` exists
 2. If it does not exist: start from Phase 0 (init)
 3. If it exists: read it and resume:
+   - If `worktree_path` is set: the session CWD may be the main repo, not the worktree. Use `Bash(cd <worktree_path>)` to switch into it before doing any work. Do NOT call `EnterWorktree` again — the worktree already exists.
    - If `phase_status` is `"awaiting_approval"`: the user's re-invocation is the approval — set `phase_status` to `"in_progress"`, update `updated_at`, write state, then execute the current `phase`
    - Otherwise: resume the current phase from where it left off
 
@@ -58,10 +60,16 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 4. Create the artifacts directory: `mkdir -p <project_root>/.claude/.build-feature-temp/`
 5. **Branch selection:**
    - Check the current git branch
-   - If on `master` (or the repo's main branch): create and switch to `feat/<slug>` from master
+   - If on `master` (or the repo's main branch): create `feat/<slug>` from master and set up a worktree (see below)
    - If on a non-master branch (e.g., `feat/something`): ask the user — "You're currently on `<branch>`. Do you want to continue working here, or create a new branch `feat/<slug>` from master?"
-     - If the user chooses to continue: stay on the current branch, use the current branch name to derive the slug (strip `feat/` prefix if present)
-     - If the user chooses a new branch: create and switch to `feat/<slug>` from master
+     - If the user chooses to continue: stay on the current branch, use the current branch name to derive the slug (strip `feat/` prefix if present); no worktree is created
+     - If the user chooses a new branch: create `feat/<slug>` from master and set up a worktree (see below)
+
+   **Creating a new branch with a worktree:**
+   - Call `EnterWorktree(name: "feat/<slug>")` — this creates the branch from HEAD and switches the session into the worktree
+   - The worktree is created at `.claude/worktrees/feat/<slug>` inside the project
+   - Record the absolute worktree path in state as `worktree_path`
+
 6. Create `.claude/.build-feature-temp/build-state.json`:
 
 ```json
@@ -86,12 +94,14 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
     "todo": null,
     "backlog": null
   },
+  "worktree_path": null,
   "created_at": "<current ISO timestamp>",
   "updated_at": "<current ISO timestamp>"
 }
 ```
 
    - If a Jira ticket was detected, set `jira.enabled` to `true`, `jira.ticket_key` to the extracted key, and `jira.ticket_url` to the original URL.
+   - If a worktree was created, set `worktree_path` to the absolute path of the worktree directory.
 
 7. Proceed to Phase 1.
 
@@ -110,13 +120,16 @@ If state has `phase` = `"brainstorm"` and `phase_status` = `"waiting_answer"`:
 ### If `jira.enabled` is `true`:
 1. Invoke the `jira` skill: `read-ticket(jira.ticket_key)` to fetch the ticket's description, comments, and context
 2. Synthesize an overall description from the ticket content
-3. Invoke the `brainstorm` skill with this synthesized description as the idea
-   - The brainstorm skill may still ask clarifying questions if needed — but it starts from a much richer context
-4. The brainstorm skill produces the spec (saved to `.claude/.build-feature-temp/<slug>-spec.md`)
+3. Invoke the `brainstorm` skill **inline** (via Skill tool, not Agent) with the synthesized description
+   - Runs in the main conversation — user interaction is fully available
+   - Gather saves Q&A to `.claude/.build-feature-temp/<slug>-qa.md`
+4. Invoke the `brainstorm/generate` skill as an Agent (model: opus) to produce the spec from the Q&A
 
 ### If `jira.enabled` is `false`:
-1. Invoke the `brainstorm` skill with the idea from state
-2. The brainstorm skill will ask questions one at a time and produce the spec (instruct it to save to `.claude/.build-feature-temp/<slug>-spec.md`)
+1. Invoke the `brainstorm` skill **inline** (via Skill tool, not Agent) with the idea from state
+   - Runs in the main conversation — user interaction is fully available
+   - Gather saves Q&A to `.claude/.build-feature-temp/<slug>-qa.md`
+2. Invoke the `brainstorm/generate` skill as an Agent (model: opus) to produce the spec from the Q&A
 
 ### Escalating questions to Jira
 If during brainstorm the user cannot answer a clarifying question and asks to post it to Jira (`jira.enabled` must be `true`):
@@ -193,7 +206,11 @@ When `.claude/.build-feature-temp/<slug>-spec.md` is detected:
 5. **If `jira.enabled` is `true`:**
    - Invoke the `jira` skill: `transition-to(jira.ticket_key, "To Review")`
    - Invoke the `jira` skill: `add-comment(jira.ticket_key, "PR: <pr_url>")`
-6. **Cleanup:** Delete `.claude/.build-feature-temp/build-state.json`
+6. **Cleanup:**
+   - Delete `.claude/.build-feature-temp/build-state.json`
+   - If `worktree_path` is set in state:
+     - If this session entered the worktree via `EnterWorktree`: call `ExitWorktree(action: "remove")`
+     - Otherwise (resumed across sessions): run `git worktree remove <worktree_path>` via Bash
 7. Tell the user: "Feature branch pushed. Build complete!"
 
 ## State Updates
