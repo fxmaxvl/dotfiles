@@ -224,6 +224,7 @@ Run up to 3 analyze → fix cycles:
    - Invoke the `jira` skill: `add-comment(jira.ticket_key, "PR: <pr_url>")`
 6. **Cleanup:**
    - Delete `.claude/.build-feature-temp/build-state.json`
+   - Delete these ephemeral handoff files if they exist: `<slug>-qa.md`, `<slug>-design-report.md`, `<slug>-impl-report.md`
    - If `worktree_path` is set in state:
      - If this session entered the worktree via `EnterWorktree`: call `ExitWorktree(action: "remove")`
      - Otherwise (resumed across sessions): run `git worktree remove <worktree_path>` via Bash
