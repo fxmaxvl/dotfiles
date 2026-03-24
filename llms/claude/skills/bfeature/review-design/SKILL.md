@@ -5,9 +5,9 @@ disable-model-invocation: true
 model: opus
 ---
 
-Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Review `.claude/.build-feature-temp/<slug>-spec.md` against the criteria below.
+Read `.claude/.bfeature-temp/build-state.json` to find the `slug`. Review `.claude/.bfeature-temp/<slug>-spec.md` against the criteria below.
 
-If `.claude/.build-feature-temp/<slug>-qa.md` exists, read it as well — use it to check that the spec faithfully represents what the user said during brainstorm, and flag any requirements that were mentioned in the Q&A but are missing or misrepresented in the spec.
+If `.claude/.bfeature-temp/<slug>-qa.md` exists, read it as well — use it to check that the spec faithfully represents what the user said during brainstorm, and flag any requirements that were mentioned in the Q&A but are missing or misrepresented in the spec.
 
 ## Review Criteria
 
@@ -32,7 +32,7 @@ If `.claude/.build-feature-temp/<slug>-qa.md` exists, read it as well — use it
 
 ## Output
 
-Save a report to `.claude/.build-feature-temp/<slug>-design-report.md`.
+Save a report to `.claude/.bfeature-temp/<slug>-design-report.md`.
 
 If all criteria pass:
 

@@ -1,6 +1,6 @@
 ---
 name: gh-issue
-description: Create GitHub issues or pick existing ones to work on. Auto-generates titles/labels for new issues, classifies existing ones, and kicks off build-feature.
+description: Create GitHub issues or pick existing ones to work on. Auto-generates titles/labels for new issues, classifies existing ones, and kicks off bfeature.
 argument-hint: [optional: "pick", "pick bug", or issue description]
 ---
 Manage GitHub issues on the current repository. Two modes: **create** (capture something to track) and **pick** (select an existing issue to work on).
@@ -108,24 +108,24 @@ When the user picks an issue:
 
 1. Get the current GitHub user with `gh api user --jq '.login'`.
 2. Assign the issue to them: `gh issue edit <number> --repo <owner/repo> --add-assignee <login>`.
-3. Get the full issue details (title, body, number) to pass to build-feature.
+3. Get the full issue details (title, body, number) to pass to bfeature.
 
-### 5. Kick off build-feature
+### 5. Kick off bfeature
 
-Invoke the `build-feature` skill with the issue context. Pass a synthesized description that includes:
+Invoke the `bfeature` skill with the issue context. Pass a synthesized description that includes:
 
-- A `GH-ISSUE:<number>` marker so build-feature can detect the GitHub issue (e.g., `GH-ISSUE:12`)
+- A `GH-ISSUE:<number>` marker so bfeature can detect the GitHub issue (e.g., `GH-ISSUE:12`)
 - The issue title
 - The issue body/description
 
-Example `$ARGUMENTS` for build-feature:
+Example `$ARGUMENTS` for bfeature:
 ```
 GH-ISSUE:12 Token refresh fails on expired sessions
 
 Session tokens are not being refreshed when they expire, causing 401 errors...
 ```
 
-This gives build-feature the full context to start the brainstorm phase and track the issue through to PR creation.
+This gives bfeature the full context to start the brainstorm phase and track the issue through to PR creation.
 
 ---
 

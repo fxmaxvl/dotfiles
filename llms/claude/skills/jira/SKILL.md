@@ -79,24 +79,24 @@ When the user picks a ticket:
 
 1. Read the full ticket details with `read-ticket(ticket_key)` (see Operations below)
 2. Transition the ticket to "In Progress": `transition-to(ticket_key, "In Progress")`
-3. Kick off the `build-feature` skill with the ticket context
+3. Kick off the `bfeature` skill with the ticket context
 
-### 5. Kick off build-feature
+### 5. Kick off bfeature
 
-Invoke the `build-feature` skill with a synthesized description that includes:
+Invoke the `bfeature` skill with a synthesized description that includes:
 
-- The Jira ticket URL so build-feature can detect it (e.g., `https://<domain>.atlassian.net/browse/PROJ-45`)
+- The Jira ticket URL so bfeature can detect it (e.g., `https://<domain>.atlassian.net/browse/PROJ-45`)
 - The ticket title/summary
 - The ticket description/body
 
-Example `$ARGUMENTS` for build-feature:
+Example `$ARGUMENTS` for bfeature:
 ```
 https://<domain>.atlassian.net/browse/PROJ-45 Token refresh fails on expired sessions
 
 Session tokens are not being refreshed when they expire, causing 401 errors...
 ```
 
-This gives build-feature the full context to start the brainstorm phase and track the ticket through to PR creation.
+This gives bfeature the full context to start the brainstorm phase and track the ticket through to PR creation.
 
 ---
 
@@ -107,13 +107,13 @@ When a Jira ticket URL is passed directly:
 1. Extract the ticket key from the URL (e.g., `PROJ-123` from `https://domain.atlassian.net/browse/PROJ-123`)
 2. Read the full ticket details with `read-ticket(ticket_key)`
 3. Transition to "In Progress": `transition-to(ticket_key, "In Progress")`
-4. Kick off `build-feature` with the ticket context (same format as Pick Mode step 5)
+4. Kick off `bfeature` with the ticket context (same format as Pick Mode step 5)
 
 ---
 
 ## Operations
 
-These operations are also used by other skills (e.g., `build-feature`) when they need to interact with Jira tickets.
+These operations are also used by other skills (e.g., `bfeature`) when they need to interact with Jira tickets.
 
 ### `read-ticket(ticket_key)`
 1. Call `<prefix>get-issues` with the ticket key

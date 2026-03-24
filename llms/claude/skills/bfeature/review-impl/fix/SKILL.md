@@ -5,9 +5,12 @@ disable-model-invocation: true
 model: sonnet
 ---
 
-Read `.claude/.build-feature-temp/build-state.json` to find the `slug`.
-Read `.claude/.build-feature-temp/<slug>-impl-report.md` for the list of concerns.
-Read `.claude/.build-feature-temp/<slug>-spec.md` and `.claude/.build-feature-temp/<slug>-plan.md` for context.
+Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `mode`.
+Read `.claude/.bfeature-temp/<slug>-impl-report.md` for the list of concerns.
+
+**Mode-aware context:**
+- **Full mode** (`mode` = `"full"`): Read `.claude/.bfeature-temp/<slug>-spec.md` and `.claude/.bfeature-temp/<slug>-plan.md` for context.
+- **Quick mode** (`mode` = `"quick"`): No spec exists. Read `.claude/.bfeature-temp/<slug>-qa.md` and `.claude/.bfeature-temp/<slug>-plan.md` for context.
 
 Implement fixes for every concern listed in the report. For each concern:
 - If it's a missing feature: implement it

@@ -10,12 +10,12 @@ Generate a complete, implementation-ready feature specification from the gathere
 
 ## Input
 
-1. Read `.claude/.build-feature-temp/build-state.json` to get the slug and context
-2. Read `.claude/.build-feature-temp/<slug>-qa.md` for the Q&A gathered interactively
+1. Read `.claude/.bfeature-temp/build-state.json` to get the slug and context
+2. Read `.claude/.bfeature-temp/<slug>-qa.md` for the Q&A gathered interactively
 
 ## Output
 
-Write a thorough spec to `.claude/.build-feature-temp/<slug>-spec.md`. Include:
+Write a thorough spec to `.claude/.bfeature-temp/<slug>-spec.md`. Include:
 
 - **Overview** — what this feature does and why
 - **Goals** — what success looks like

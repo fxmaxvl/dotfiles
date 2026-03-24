@@ -25,9 +25,10 @@ Reusable skills live in `./skills/`. Each skill has a `SKILL.md` with frontmatte
 
 ### Entry points for feature work
 
-- **From GitHub**: `/gh-issue` pick → assigns + kicks off `/build-feature`
-- **From Jira**: `/jira` pick or URL → assigns + transitions to "In Progress" + kicks off `/build-feature`
-- **Direct**: `/build-feature <idea>` for ad-hoc features
+- **From GitHub**: `/gh-issue` pick → assigns + kicks off `/bfeature`
+- **From Jira**: `/jira` pick or URL → assigns + transitions to "In Progress" + kicks off `/bfeature`
+- **Direct**: `/bfeature <idea>` for full features (brainstorm → spec → design review → plan → execute)
+- **Quick**: `/bfeature:quick <idea>` for small bugfixes and focused changes (refine → plan → execute)
 
 ### Model routing
 
@@ -35,7 +36,7 @@ Skills declare a `model` field in their frontmatter. Reasoning-heavy phases (bra
 
 ### Workflow state
 
-`build-feature` persists state and all artifacts (spec, plan, todo, backlog) in `.claude/.build-feature-temp/`, allowing resume across sessions. The state file is cleaned up after finalization.
+`bfeature` persists state and all artifacts (spec, plan, todo, backlog) in `.claude/.bfeature-temp/`, allowing resume across sessions. The state file includes a `mode` field (`"full"` or `"quick"`) that controls which phases are executed. The state file is cleaned up after finalization.
 
 ## Conventions
 

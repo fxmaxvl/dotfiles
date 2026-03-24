@@ -10,7 +10,10 @@ Scan the feature branch changes for `TODO` comments **that are related to this f
 
 ## Input
 
-Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Also read `.claude/.build-feature-temp/<slug>-spec.md` to understand the feature context — you'll need this to filter relevant vs. unrelated TODOs.
+Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `mode`. Read the appropriate feature context to filter relevant vs. unrelated TODOs:
+
+- **Full mode** (`mode` = `"full"`): Read `.claude/.bfeature-temp/<slug>-spec.md` for feature context.
+- **Quick mode** (`mode` = `"quick"`): No spec exists. Read `.claude/.bfeature-temp/<slug>-qa.md` for feature context.
 
 ## Steps
 
@@ -43,7 +46,7 @@ For each found comment, classify the reason:
 
 ### 4. Generate backlog document
 
-Write to `.claude/.build-feature-temp/<slug>-backlog.md`:
+Write to `.claude/.bfeature-temp/<slug>-backlog.md`:
 
 ```markdown
 # <slug> — Backlog
@@ -82,5 +85,5 @@ Items discovered during implementation of `<slug>`. All items are labeled with t
 
 ## Output
 
-- Backlog document: `.claude/.build-feature-temp/<slug>-backlog.md`
-- Update `.claude/.build-feature-temp/build-state.json`: set `artifacts.backlog` to `"<slug>-backlog.md"`
+- Backlog document: `.claude/.bfeature-temp/<slug>-backlog.md`
+- Update `.claude/.bfeature-temp/build-state.json`: set `artifacts.backlog` to `"<slug>-backlog.md"`

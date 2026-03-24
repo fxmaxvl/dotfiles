@@ -6,7 +6,12 @@ allowed-tools: Read, Grep, Glob, Bash(git *)
 model: opus
 ---
 
-Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Review the implementation by comparing what was built against `.claude/.build-feature-temp/<slug>-spec.md` and `.claude/.build-feature-temp/<slug>-plan.md`. Use git diff from the feature branch to see all changes.
+Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `mode`. Review the implementation by comparing what was built against the plan and requirements. Use git diff from the feature branch to see all changes.
+
+## Mode-aware input
+
+- **Full mode** (`mode` = `"full"`): Compare against `.claude/.bfeature-temp/<slug>-spec.md` and `.claude/.bfeature-temp/<slug>-plan.md`.
+- **Quick mode** (`mode` = `"quick"`): No spec exists. Compare against `.claude/.bfeature-temp/<slug>-qa.md` and `.claude/.bfeature-temp/<slug>-plan.md`.
 
 ## Review Criteria
 
@@ -39,7 +44,7 @@ Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Review t
 
 ## Output
 
-Save a report to `.claude/.build-feature-temp/<slug>-impl-report.md`.
+Save a report to `.claude/.bfeature-temp/<slug>-impl-report.md`.
 
 If all criteria pass:
 

@@ -21,6 +21,9 @@ When a step requires a temporary solution, workaround, or deferred work (e.g., w
 
 The `(<slug>)` tag ties the comment to the feature so it can be collected automatically during the collect-todos phase. Every deferred item must have a comment in the code — no silent shortcuts.
 
-Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Store the plan in `.claude/.build-feature-temp/<slug>-plan.md`. Also create `.claude/.build-feature-temp/<slug>-todo.md` to keep state.
+Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `mode`. Store the plan in `.claude/.bfeature-temp/<slug>-plan.md`. Also create `.claude/.bfeature-temp/<slug>-todo.md` to keep state.
 
-The spec is in: `.claude/.build-feature-temp/<slug>-spec.md`
+## Mode-aware input
+
+- **Full mode** (`mode` = `"full"`): Read the spec from `.claude/.bfeature-temp/<slug>-spec.md` — this is the primary input for planning.
+- **Quick mode** (`mode` = `"quick"`): No spec exists. Read `.claude/.bfeature-temp/<slug>-qa.md` directly — the Q&A is the primary input. Produce a lighter plan (3-8 todo items) since quick mode targets smaller, well-scoped changes.
