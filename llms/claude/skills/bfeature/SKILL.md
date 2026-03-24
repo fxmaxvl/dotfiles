@@ -25,10 +25,11 @@ Each sub-skill declares a `model` field in its SKILL.md frontmatter. When delega
 | `review-design/fix` | Agent tool | sonnet | Applies spec fixes — execution task |
 | `plan` | Agent tool | opus | Deep reasoning for TDD blueprints |
 | `do-todo` | Agent tool | sonnet | Fast, execution-focused coding |
+| `verify` | Agent tool | sonnet | Quality gates — runs tests (monorepo-aware) and lint with auto-fix |
 | `review-impl` | Agent tool | opus | Implementation analysis — produces report, no user interaction |
 | `review-impl/fix` | Agent tool | sonnet | Applies code fixes — execution task |
-| `collect-todos` | Agent tool | sonnet | Mechanical scanning task |
-| `finalize` (Phase 7) | Agent tool | sonnet | Mechanical git/PR operations |
+| `finalize` (Phase 6) | Agent tool | sonnet | Mechanical git/PR operations |
+| `collect-todos` (Phase 7, optional) | Agent tool | sonnet | Mechanical scanning task — skipped if user declines |
 
 `brainstorm` (gather) and `refine` are the only sub-skills invoked inline via the Skill tool — do **not** wrap them in an Agent call. All others use the Agent tool with the declared model.
 
@@ -36,12 +37,12 @@ Each sub-skill declares a `model` field in its SKILL.md frontmatter. When delega
 
 **Full mode** (default):
 ```
-init → brainstorm → review-design ⇄ fix → plan → execute → review-impl ⇄ fix → collect-todos → finalize → done
+init → brainstorm → review-design ⇄ fix → plan → execute → verify → review-impl ⇄ fix → verify (silent) → finalize (commit/push/ticket) → collect-todos? → cleanup → done
 ```
 
 **Quick mode** (invoked via `/bfeature:quick`):
 ```
-init → refine → plan (from Q&A) → execute → review-impl ⇄ fix → collect-todos → finalize → done
+init → refine → plan (from Q&A) → execute → verify → review-impl ⇄ fix → verify (silent) → finalize (commit/push/ticket) → collect-todos? → cleanup → done
 ```
 
 Quick mode skips spec generation and design review. The `refine` phase replaces brainstorm with a lighter Q&A that feeds directly into planning.
@@ -208,8 +209,20 @@ Run up to 3 analyze → fix cycles:
 2. After each item is completed, check if all items in `<slug>-todo.md` are checked (`[x]`)
 3. If unchecked items remain: invoke `do-todo` again
 4. When all items are checked:
+   - Update state: `phase` to `"verify"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
+   - Ask the user: "All tasks complete. Ready to run quality gates (tests + lint)?"
+   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 4.5
+   - If no: **Exit** (re-invoke `/bfeature` when ready)
+
+## Phase 4.5 — Verify
+
+1. Invoke the `verify` skill as an Agent (model: sonnet)
+   - Detects project type, consults conventions, determines test and lint commands
+   - Runs full test suite (monorepo-scoped if applicable) — fixes failures caused by our changes; surfaces unrelated failures to the user
+   - Runs linter with auto-fix where available — fixes all remaining issues manually if needed
+2. When tests and lint are green:
    - Update state: `phase` to `"review-impl"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Ask the user: "All tasks complete. Ready to proceed to implementation review?"
+   - Ask the user: "Quality gates passed. Ready to proceed to implementation review?"
    - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 5
    - If no: **Exit** (re-invoke `/bfeature` when ready)
 
@@ -226,43 +239,54 @@ Run up to 3 analyze → fix cycles:
    - If yes: invoke `review-impl/fix` as an Agent (model: sonnet), then go back to step 1
    - If no (user accepts as-is): proceed to step 5
    - If this was already the 3rd cycle: tell the user "Max review cycles reached — please review the implementation manually" and stop
-5. Update state: `phase` to `"collect-todos"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-6. Ask the user: "Implementation review passed. Ready to proceed to TODO collection?"
+5. Update state: `phase` to `"finalize"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
+6. Ask the user: "Implementation review passed. Ready to finalize (commit, push, PR)?"
 7. If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 6
 8. If no: **Exit** (re-invoke `/bfeature` when ready)
 
-## Phase 6 — Collect TODOs
+## Phase 6 — Finalize
 
-1. Invoke the `collect-todos` skill
-2. The skill scans changes introduced by the feature branch for TODO comments, classifies them, and generates `.claude/.bfeature-temp/<slug>-backlog.md`
-3. When complete:
-   - Update state: set `artifacts.backlog` to `"<slug>-backlog.md"` (or `null` if no items found), `phase` to `"finalize"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Ask the user: "TODOs collected. Ready to finalize (commit, push, PR)?"
-   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 7
-   - If no: **Exit** (re-invoke `/bfeature` when ready)
-
-## Phase 7 — Finalize
-
-1. Stage implementation changes only — do **not** `git add` anything in `.claude/.bfeature-temp/`.
-2. Commit using conventional commit format (see `conventions/git.md`):
+1. **Silent quality gate:** Before touching git, invoke the `verify` skill as an Agent (model: sonnet) one final time.
+   - This catches any regressions introduced by review-impl fix cycles
+   - If tests or lint fail: stop, tell the user which checks failed, and ask how to proceed — do **not** commit broken code
+   - If all green: continue
+2. Stage implementation changes only — do **not** `git add` anything in `.claude/.bfeature-temp/`.
+3. Commit using conventional commit format (see `conventions/git.md`):
    - Use `feat:` prefix with a concise description of the feature
    - If `github_issue.enabled`, include the issue number in the commit message (e.g., `feat(#12): fix token refresh`)
    - If `jira.enabled`, include the ticket key in the commit message (e.g., `feat(PROJ-123): add dark mode`)
    - Add `#pr` tag since this is the feature branch
-3. Push the branch to remote
-4. Create a PR using `gh pr create`:
+4. Push the branch to remote
+5. Create a PR using `gh pr create`:
    - **If `github_issue.enabled` is `true`:** include `Closes #<github_issue.number>` in the PR body. This automatically closes the issue when the PR is merged.
    - Include a summary of the feature in the PR body
-5. **If `jira.enabled` is `true`:**
+6. **If `jira.enabled` is `true`:**
    - Invoke the `jira` skill: `transition-to(jira.ticket_key, "To Review")`
    - Invoke the `jira` skill: `add-comment(jira.ticket_key, "PR: <pr_url>")`
-6. **Cleanup:**
-   - Delete `.claude/.bfeature-temp/build-state.json`
-   - Delete these ephemeral handoff files if they exist: `<slug>-qa.md`, `<slug>-design-report.md`, `<slug>-impl-report.md`
-   - If `worktree_path` is set in state:
-     - If this session entered the worktree via `EnterWorktree`: call `ExitWorktree(action: "remove")`
-     - Otherwise (resumed across sessions): run `git worktree remove <worktree_path>` via Bash
-7. Tell the user: "Feature branch pushed. Build complete!"
+7. Tell the user: "PR is up at <pr_url>. Build complete!"
+8. Update state: `phase` to `"collect-todos"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
+9. Ask the user: "Want me to scan the feature changes for TODO comments and add them to the backlog?"
+   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 7
+   - If no: skip Phase 7, proceed directly to Phase 8 (Cleanup)
+
+## Phase 7 — Collect TODOs (optional)
+
+1. Invoke the `collect-todos` skill as an Agent (model: sonnet)
+2. The skill scans changes introduced by the feature branch for TODO comments, classifies them, and generates `.claude/.bfeature-temp/<slug>-backlog.md`
+3. When complete:
+   - Update state: set `artifacts.backlog` to `"<slug>-backlog.md"` (or `null` if no items found)
+4. Proceed to Phase 8 (Cleanup)
+
+## Phase 8 — Cleanup
+
+Run as a **background Agent** (`run_in_background: true`, model: sonnet) — fire and forget, do not wait for completion.
+
+The agent should:
+1. Delete `.claude/.bfeature-temp/build-state.json`
+2. Delete these ephemeral handoff files if they exist: `<slug>-qa.md`, `<slug>-design-report.md`, `<slug>-impl-report.md`
+3. If `worktree_path` is set in state:
+   - If this session entered the worktree via `EnterWorktree`: call `ExitWorktree(action: "remove")`
+   - Otherwise (resumed across sessions): run `git worktree remove <worktree_path>` via Bash
 
 ## State Updates
 
