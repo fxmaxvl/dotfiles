@@ -27,3 +27,31 @@ Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `mode`. St
 
 - **Full mode** (`mode` = `"full"`): Read the spec from `.claude/.bfeature-temp/<slug>-spec.md` — this is the primary input for planning.
 - **Quick mode** (`mode` = `"quick"`): No spec exists. Read `.claude/.bfeature-temp/<slug>-qa.md` directly — the Q&A is the primary input. Produce a lighter plan (3-8 todo items) since quick mode targets smaller, well-scoped changes.
+
+## Quality gates — detect and document
+
+Before writing the plan, scan the project to determine how quality gates will be run. This ensures the executor knows what "done" looks like.
+
+1. **Detect project type** by checking for: `package.json`, `go.mod`, `Cargo.toml`, `pom.xml`/`build.gradle`, `pyproject.toml`/`setup.py`
+2. **Consult conventions first** (before general knowledge):
+   - TypeScript/JavaScript project → read `conventions/typescript.md` for lint and test guidance
+   - All projects → read `conventions/testing.md` for test requirements
+3. **Detect monorepo** — check for `workspaces` in `package.json`, `pnpm-workspace.yaml`, `lerna.json`, `go.work`, or nested `package.json` files
+4. **Determine commands** — based on detected type and conventions, identify:
+   - Test command (monorepo-scoped if applicable)
+   - Lint command + auto-fix variant if available
+
+Include a **"Quality Gates"** section in `<slug>-plan.md` that documents these commands so the verify phase has a starting point. Example:
+
+```markdown
+## Quality Gates
+
+- **Tests:** `npm test` (scoped to `packages/foo` — monorepo)
+- **Lint:** `npm run lint` / auto-fix: `npm run lint:fix`
+```
+
+Also add a final todo item to `<slug>-todo.md`:
+
+```
+- [ ] Run quality gates: tests green, lint clean
+```
