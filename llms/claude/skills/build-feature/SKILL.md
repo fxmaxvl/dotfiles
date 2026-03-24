@@ -43,7 +43,7 @@ init → brainstorm → review-design ⇄ fix → plan → execute → review-im
 2. If it does not exist: start from Phase 0 (init)
 3. If it exists: read it and resume:
    - If `worktree_path` is set: the session CWD may be the main repo, not the worktree. Use `Bash(cd <worktree_path>)` to switch into it before doing any work. Do NOT call `EnterWorktree` again — the worktree already exists.
-   - If `phase_status` is `"awaiting_approval"`: the user's re-invocation is the approval — set `phase_status` to `"in_progress"`, update `updated_at`, write state, then execute the current `phase`
+   - If `phase_status` is `"awaiting_approval"`: ask the user "Paused before [current phase]. Ready to proceed?" — if yes, set `phase_status` to `"in_progress"`, update state, and execute the current phase; if no, exit
    - Otherwise: resume the current phase from where it left off
 
 ## Phase 0 — Init
@@ -143,8 +143,9 @@ If during brainstorm the user cannot answer a clarifying question and asks to po
 ### In all cases:
 When `.claude/.build-feature-temp/<slug>-spec.md` is detected:
    - Update state: set `artifacts.spec` to `"<slug>-spec.md"`, `phase` to `"review-design"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Tell the user: "Spec written to `.claude/.build-feature-temp/<slug>-spec.md`. Run `/build-feature` to continue to design review."
-   - **Exit.**
+   - Ask the user: "Spec written to `.claude/.build-feature-temp/<slug>-spec.md`. Ready to proceed to design review?"
+   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 2
+   - If no: **Exit** (re-invoke `/build-feature` when ready)
 
 ## Phase 2 — Review Design
 
@@ -160,16 +161,18 @@ Run up to 3 analyze → fix cycles:
    - If no (user accepts as-is): proceed to step 5
    - If this was already the 3rd cycle: tell the user "Max review cycles reached — please review the spec manually" and stop
 5. Update state: `phase` to `"plan"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-6. Tell the user: "Design review passed. Run `/build-feature` to continue to planning."
-7. **Exit.**
+6. Ask the user: "Design review passed. Ready to proceed to planning?"
+7. If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 3
+8. If no: **Exit** (re-invoke `/build-feature` when ready)
 
 ## Phase 3 — Plan
 
 1. Invoke the `plan` skill (it reads `.claude/.build-feature-temp/<slug>-spec.md` and produces `.claude/.build-feature-temp/<slug>-plan.md` + `.claude/.build-feature-temp/<slug>-todo.md`)
 2. When both files are detected:
    - Update state: set `artifacts.plan` to `"<slug>-plan.md"`, `artifacts.todo` to `"<slug>-todo.md"`, `phase` to `"execute"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Tell the user: "Plan written to `.claude/.build-feature-temp/<slug>-plan.md`. Run `/build-feature` to start execution."
-   - **Exit.**
+   - Ask the user: "Plan written to `.claude/.build-feature-temp/<slug>-plan.md`. Ready to start execution?"
+   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 4
+   - If no: **Exit** (re-invoke `/build-feature` when ready)
 
 ## Phase 4 — Execute
 
@@ -178,8 +181,9 @@ Run up to 3 analyze → fix cycles:
 3. If unchecked items remain: invoke `do-todo` again
 4. When all items are checked:
    - Update state: `phase` to `"review-impl"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Tell the user: "All tasks complete. Run `/build-feature` to continue to implementation review."
-   - **Exit.**
+   - Ask the user: "All tasks complete. Ready to proceed to implementation review?"
+   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 5
+   - If no: **Exit** (re-invoke `/build-feature` when ready)
 
 ## Phase 5 — Review Implementation
 
@@ -195,8 +199,9 @@ Run up to 3 analyze → fix cycles:
    - If no (user accepts as-is): proceed to step 5
    - If this was already the 3rd cycle: tell the user "Max review cycles reached — please review the implementation manually" and stop
 5. Update state: `phase` to `"collect-todos"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-6. Tell the user: "Implementation review passed. Run `/build-feature` to continue to TODO collection."
-7. **Exit.**
+6. Ask the user: "Implementation review passed. Ready to proceed to TODO collection?"
+7. If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 6
+8. If no: **Exit** (re-invoke `/build-feature` when ready)
 
 ## Phase 6 — Collect TODOs
 
@@ -204,8 +209,9 @@ Run up to 3 analyze → fix cycles:
 2. The skill scans changes introduced by the feature branch for TODO comments, classifies them, and generates `.claude/.build-feature-temp/<slug>-backlog.md`
 3. When complete:
    - Update state: set `artifacts.backlog` to `"<slug>-backlog.md"` (or `null` if no items found), `phase` to `"finalize"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Tell the user: "TODOs collected. Run `/build-feature` to finalize (commit, push, PR)."
-   - **Exit.**
+   - Ask the user: "TODOs collected. Ready to finalize (commit, push, PR)?"
+   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 7
+   - If no: **Exit** (re-invoke `/build-feature` when ready)
 
 ## Phase 7 — Finalize
 
