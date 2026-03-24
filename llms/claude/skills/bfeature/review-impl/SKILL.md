@@ -22,7 +22,6 @@ Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `mode`. Re
 
 ### 2. Dev conventions
 - Check against the project's `conventions/dev.md` conventions:
-  - All code files start with `ABOUTME:` comments (2 lines)
   - Code style matches surrounding code
   - No unrelated changes
   - No mock implementations

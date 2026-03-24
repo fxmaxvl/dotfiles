@@ -205,10 +205,8 @@ Run up to 3 analyze → fix cycles:
 
 ## Phase 4 — Execute
 
-1. Invoke the `do-todo` skill to pick up the next unchecked item from `<slug>-todo.md`
-2. After each item is completed, check if all items in `<slug>-todo.md` are checked (`[x]`)
-3. If unchecked items remain: invoke `do-todo` again
-4. When all items are checked:
+1. Invoke the `do-todo` skill as an Agent (model: sonnet) — it loops internally until all items are checked
+2. When it completes:
    - Update state: `phase` to `"verify"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
    - Ask the user: "All tasks complete. Ready to run quality gates (tests + lint)?"
    - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 4.5
@@ -250,13 +248,11 @@ Run up to 3 analyze → fix cycles:
    - This catches any regressions introduced by review-impl fix cycles
    - If tests or lint fail: stop, tell the user which checks failed, and ask how to proceed — do **not** commit broken code
    - If all green: continue
-2. Stage implementation changes only — do **not** `git add` anything in `.claude/.bfeature-temp/`.
-3. Commit using conventional commit format (see `conventions/git.md`):
-   - Use `feat:` prefix with a concise description of the feature
-   - If `github_issue.enabled`, include the issue number in the commit message (e.g., `feat(#12): fix token refresh`)
-   - If `jira.enabled`, include the ticket key in the commit message (e.g., `feat(PROJ-123): add dark mode`)
-   - Add `#pr` tag since this is the feature branch
-4. Push the branch to remote
+2. Check for uncommitted changes (verify and review-impl/fix cycles may have left changes unstaged). If any exist: stage them (do **not** `git add` anything in `.claude/.bfeature-temp/`) and commit following `conventions/git.md`:
+   - Use `feat:` prefix with a concise description of the fixes/cleanup
+   - If `github_issue.enabled`, include the issue number (e.g., `feat(#12): address review concerns`)
+   - If `jira.enabled`, include the ticket key (e.g., `feat(PROJ-123): address review concerns`)
+3. Push the branch to remote
 5. Create a PR using `gh pr create`:
    - **If `github_issue.enabled` is `true`:** include `Closes #<github_issue.number>` in the PR body. This automatically closes the issue when the PR is merged.
    - Include a summary of the feature in the PR body

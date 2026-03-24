@@ -13,7 +13,7 @@ Manage state via `.claude/.bfeature-temp/build-state.json` and delegate to exist
 ## Quick Mode Phase Flow
 
 ```
-init → refine → plan (from Q&A) → execute → review-impl ⇄ fix → collect-todos → finalize → done
+init → refine → plan (from Q&A) → execute → verify → review-impl ⇄ fix → verify (silent) → finalize → done
 ```
 
 ## On Invocation
@@ -90,11 +90,21 @@ Proceed to Phase 1.
 
 ## Phase 3 — Execute
 
-Same as full-mode Phase 4. Invoke `do-todo` repeatedly until all items are checked.
+Invoke the `do-todo` skill as an Agent (model: sonnet) — it loops internally until all items are checked.
 
-When all items are checked:
+When it completes:
+- Update state: `phase` to `"verify"`, `phase_status` to `"awaiting_approval"`
+- Ask the user: "All tasks complete. Ready to run quality gates (tests + lint)?"
+- If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 3.5
+- If no: **Exit**
+
+## Phase 3.5 — Verify
+
+Same as full-mode Phase 4.5. Invoke the `verify` skill as an Agent (model: sonnet).
+
+When tests and lint are green:
 - Update state: `phase` to `"review-impl"`, `phase_status` to `"awaiting_approval"`
-- Ask the user: "All tasks complete. Ready to proceed to implementation review?"
+- Ask the user: "Quality gates passed. Ready to proceed to implementation review?"
 
 ## Phase 4 — Review Implementation
 
@@ -102,15 +112,9 @@ Same as full-mode Phase 5. Run up to 3 analyze → fix cycles using `review-impl
 
 The review-impl skill reads `mode` from state and compares against Q&A + plan (not spec).
 
-## Phase 5 — Collect TODOs
+## Phase 5 — Finalize
 
-Same as full-mode Phase 6. Invoke `collect-todos` to scan for TODO comments.
-
-The collect-todos skill reads `mode` from state and uses Q&A for feature context (not spec).
-
-## Phase 6 — Finalize
-
-Same as full-mode Phase 7. Commit, push, create PR, cleanup.
+Same as full-mode Phase 6. Commit, push, create PR, cleanup.
 
 Fewer ephemeral files to clean (no spec, no design report).
 
@@ -121,10 +125,10 @@ Fewer ephemeral files to clean (no spec, no design report).
 | `refine` | Skill tool (inline) | — |
 | `plan` | Agent tool | opus |
 | `do-todo` | Agent tool | sonnet |
+| `verify` | Agent tool | sonnet |
 | `review-impl` | Agent tool | opus |
 | `review-impl/fix` | Agent tool | sonnet |
-| `collect-todos` | Agent tool | sonnet |
-| `finalize` (Phase 6) | Agent tool | sonnet |
+| `finalize` (Phase 5) | Agent tool | sonnet |
 
 Here is the idea:
 $ARGUMENTS

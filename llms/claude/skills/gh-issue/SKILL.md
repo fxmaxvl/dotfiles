@@ -2,6 +2,7 @@
 name: gh-issue
 description: Create GitHub issues or pick existing ones to work on. Auto-generates titles/labels for new issues, classifies existing ones, and kicks off bfeature.
 argument-hint: [optional: "pick", "pick bug", or issue description]
+model: sonnet
 ---
 Manage GitHub issues on the current repository. Two modes: **create** (capture something to track) and **pick** (select an existing issue to work on).
 
@@ -110,9 +111,13 @@ When the user picks an issue:
 2. Assign the issue to them: `gh issue edit <number> --repo <owner/repo> --add-assignee <login>`.
 3. Get the full issue details (title, body, number) to pass to bfeature.
 
-### 5. Kick off bfeature
+### 5. Choose mode
 
-Invoke the `bfeature` skill with the issue context. Pass a synthesized description that includes:
+Ask: "Full workflow (brainstorm → spec → review → plan → execute) or quick mode (refine → plan → execute)?"
+
+### 6. Kick off bfeature
+
+Invoke `bfeature` (full) or `bfeature:quick` based on the user's choice. Pass a synthesized description that includes:
 
 - A `GH-ISSUE:<number>` marker so bfeature can detect the GitHub issue (e.g., `GH-ISSUE:12`)
 - The issue title

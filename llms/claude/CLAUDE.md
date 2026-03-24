@@ -1,3 +1,20 @@
+## Conventions — read before acting
+
+This applies to **all work in this repo**, regardless of whether a skill is involved or Maks explicitly mentions conventions.
+
+Before writing code, committing, writing tests, reviewing code, or making architectural decisions — read the relevant doc first. Do not infer conventions from git history or surrounding code. Always check the doc.
+
+| Action | Read first |
+|--------|-----------|
+| Writing or modifying code | `./conventions/dev.md` |
+| Writing or modifying tests | `./conventions/testing.md` |
+| Committing | `./conventions/git.md` |
+| Designing architecture | `./conventions/architecture.md` |
+| TypeScript / JavaScript work | `./conventions/typescript.md` |
+| Reviewing code | `./conventions/code-review.md` |
+
+---
+
 ## Our relationship
 
 - We're coworkers. When you think of me, think of me as your colleague "Maks", not as "the user" or "the human"
@@ -17,7 +34,7 @@ Whenever you build out a new project and specifically start a new Claude.md - yo
 
 - ALWAYS ask for clarification rather than making assumptions.
 - **CRITICAL: Ask ONE question at a time. Never batch multiple questions into a single response. If you have 3 things to clarify, ask the first one, wait for the answer, then ask the next.** This is a hard rule, not a suggestion.
-- If you're having trouble with something, it's ok to stop and ask for help. Especially if it's something your human might be better at.
+- If you're having trouble with something, it's ok to stop and ask for help. Especially if it's something Maks might be better at.
 
 ## Skills
 
@@ -25,26 +42,9 @@ Reusable skills live in `./skills/`. Each skill has a `SKILL.md` with frontmatte
 
 ### Entry points for feature work
 
-- **From GitHub**: `/gh-issue` pick → assigns + kicks off `/bfeature`
-- **From Jira**: `/jira-issue` pick or URL → assigns + transitions to "In Progress" + kicks off `/bfeature`
-- **Direct**: `/bfeature <idea>` for full features (brainstorm → spec → design review → plan → execute)
-- **Quick**: `/bfeature:quick <idea>` for small bugfixes and focused changes (refine → plan → execute)
+- **From GitHub**: `/gh-issue` — browse and pick an issue, then kicks off `/bfeature`
+- **From Jira**: `/jira-issue` — browse, pick, or pass a URL; assigns + transitions to "In Progress", then kicks off `/bfeature`
+- **Direct**: `/bfeature <idea>` — full workflow for new features
+- **Quick**: `/bfeature:quick <idea>` — lightweight workflow for small bugfixes and focused changes
 
-### Model routing
 
-Skills declare a `model` field in their frontmatter. Reasoning-heavy phases (brainstorm, review, plan) use **opus**; execution-focused phases (coding, scanning) use **sonnet**.
-
-### Workflow state
-
-`bfeature` persists state and all artifacts (spec, plan, todo, backlog) in `.claude/.bfeature-temp/`, allowing resume across sessions. The state file includes a `mode` field (`"full"` or `"quick"`) that controls which phases are executed. The state file is cleaned up after finalization.
-
-## Conventions
-
-**IMPORTANT: Before performing any action that may have documented conventions (committing, writing code, writing tests, etc.), you MUST read the relevant convention doc first.** Do not infer conventions from git history or other heuristics — always check the doc. Convention docs are relative to this file:
-
-- **Development**: `./conventions/dev.md` — coding standards, style rules, implementation guidelines
-- **Testing**: `./conventions/testing.md` — testing requirements and TDD process
-- **Architecture**: `./conventions/architecture.md` — architectural patterns and design principles
-- **Git**: `./conventions/git.md` — commit message format and conventions
-- **TypeScript/JS**: `./conventions/typescript.md` — TypeScript and JavaScript conventions
-- **Code Review**: `./conventions/code-review.md` — what to check when reviewing code
