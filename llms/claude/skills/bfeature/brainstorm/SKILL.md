@@ -13,6 +13,10 @@ Do **not** skip steps or ask multiple questions at once.
 
 If the idea was sourced from a Jira ticket (check `.claude/.bfeature-temp/build-state.json` for `jira.enabled === true`), you will receive a pre-synthesized description built from the ticket's description and comments. This gives you a richer starting point — you may need fewer clarifying questions, but still ask if anything is ambiguous or underspecified.
 
+## GitHub-sourced ideas
+
+If the idea was sourced from a GitHub issue (check `.claude/.bfeature-temp/build-state.json` for `github_issue.enabled === true`), you will receive the issue title and body as the description. This gives you a richer starting point — you may need fewer clarifying questions, but still ask if anything is ambiguous or underspecified.
+
 ## Knowing when to stop
 
 Stop asking questions when you have enough information to hand off to spec generation:

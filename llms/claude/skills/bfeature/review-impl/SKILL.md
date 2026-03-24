@@ -34,7 +34,8 @@ Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `mode`. Re
   - Integration tests exist
   - End-to-end tests exist
   - Test output is pristine (no unexpected warnings/errors)
-- Run the test suite and verify all tests pass
+
+Do **not** run the test suite — `verify` already ran it before this phase. If tests need re-running (e.g., after `review-impl/fix`), the silent verify in finalize handles that.
 
 ### 4. Code style
 - Naming is evergreen (no "new", "improved", "enhanced")

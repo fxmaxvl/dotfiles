@@ -19,4 +19,4 @@ Before providing any solution or answer:
 
 3. **Do not jump to conclusions** - engage in a dialogue to ensure you fully understand the problem before proposing solutions
 
-Start by acknowledging the topic and asking 2-4 thoughtful clarifying questions.
+Start by acknowledging the topic and asking one thoughtful clarifying question. Ask follow-up questions one at a time — wait for the user's response before asking the next.

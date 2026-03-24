@@ -3,7 +3,7 @@ name: bfeature
 description: Orchestrate the full brainstorm → plan → execute workflow with review gates between phases.
 disable-model-invocation: false
 argument-hint: [idea description, Jira ticket URL, or GH-ISSUE:<number>]
-allowed-tools: Read, Write, Grep, Glob, Bash(git *), mcp__*__jira__*
+allowed-tools: Read, Write, Grep, Glob, Bash(git *), Bash(gh *), mcp__*__jira__*
 ---
 
 Orchestrate the full development workflow for a feature. Manage state via `.claude/.bfeature-temp/build-state.json` and delegate to existing skills with approval gates between each phase.
@@ -28,10 +28,11 @@ Each sub-skill declares a `model` field in its SKILL.md frontmatter. When delega
 | `verify` | Agent tool | sonnet | Quality gates — runs tests (monorepo-aware) and lint with auto-fix |
 | `review-impl` | Agent tool | opus | Implementation analysis — produces report, no user interaction |
 | `review-impl/fix` | Agent tool | sonnet | Applies code fixes — execution task |
-| `finalize` (Phase 6) | Agent tool | sonnet | Mechanical git/PR operations |
 | `collect-todos` (Phase 7, optional) | Agent tool | sonnet | Mechanical scanning task — skipped if user declines |
 
 `brainstorm` (gather) and `refine` are the only sub-skills invoked inline via the Skill tool — do **not** wrap them in an Agent call. All others use the Agent tool with the declared model.
+
+**Phase 6 (Finalize) and Phase 8 (Cleanup) are executed directly by the orchestrator** — they have no sub-skill files. The finalize logic is defined inline in this file (see Phase 6 below).
 
 ## Phase Flow
 
@@ -64,10 +65,10 @@ Quick mode skips spec generation and design review. The `refine` phase replaces 
    - Use the issue number as slug prefix: `gh-<number>-<short-description>` (e.g., `gh-12-token-refresh`)
 2. **Detect Jira ticket:** Check if `$ARGUMENTS` contains a Jira ticket URL (e.g., `https://<domain>.atlassian.net/browse/PROJ-123` or similar). If it does:
    - Extract the ticket key (e.g., `PROJ-123`)
-   - Invoke the `jira` skill to verify Jira MCP tools are available. If not available, stop.
+   - Invoke the `jira-issue` skill to verify Jira MCP tools are available. If not available, stop.
    - Set `jira.ticket_key` in state (see below)
    - Use the ticket key as slug prefix: `<ticket-key>-<short-description>` (e.g., `PROJ-123-dark-mode`)
-   - Invoke the `jira` skill: `transition-to(ticket_key, "In Progress")`
+   - Invoke the `jira-issue` skill: `transition-to(ticket_key, "In Progress")`
 3. If neither GitHub issue nor Jira ticket: derive a short kebab-case slug from the idea as before (e.g., "add dark mode" → "dark-mode")
 4. Create the artifacts directory: `mkdir -p <project_root>/.claude/.bfeature-temp/`
 5. **Branch selection:**
@@ -257,8 +258,8 @@ Run up to 3 analyze → fix cycles:
    - **If `github_issue.enabled` is `true`:** include `Closes #<github_issue.number>` in the PR body. This automatically closes the issue when the PR is merged.
    - Include a summary of the feature in the PR body
 6. **If `jira.enabled` is `true`:**
-   - Invoke the `jira` skill: `transition-to(jira.ticket_key, "To Review")`
-   - Invoke the `jira` skill: `add-comment(jira.ticket_key, "PR: <pr_url>")`
+   - Invoke the `jira-issue` skill: `transition-to(jira.ticket_key, "To Review")`
+   - Invoke the `jira-issue` skill: `add-comment(jira.ticket_key, "PR: <pr_url>")`
 7. Tell the user: "PR is up at <pr_url>. Build complete!"
 8. Update state: `phase` to `"collect-todos"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
 9. Ask the user: "Want me to scan the feature changes for TODO comments and add them to the backlog?"
