@@ -30,11 +30,10 @@ For each match, capture:
 
 ### 2. Assess feature relevance
 
-Every TODO found in step 1 should be included — never silently drop items. Assess each one for its confidence of relevance to the feature:
+Every TODO found in step 1 should be included — never silently drop items. Assess whether each TODO is clearly related to the feature:
 
-- **tagged** — has `(<slug>)` tag (e.g., `TODO(<slug>):`). Always feature-related, highest confidence.
-- **related** — untagged, but clearly relates to the feature based on context: references the feature's domain, components, dependencies, or describes workarounds made during this implementation.
-- **unclear** — untagged, and the connection to the feature is ambiguous. Could be a drive-by improvement or generic note. Include it in the backlog but flag it so the user can decide.
+- **Clearly related** — has `(<slug>)` tag (e.g., `TODO(<slug>):`), or clearly references the feature's domain, components, or describes workarounds made during this implementation. Use the slug as the Feature value.
+- **Unclear** — untagged and the connection to the feature is ambiguous. Could be a drive-by improvement or generic note. Prefix the Feature value with `[?]` so the user can decide.
 
 ### 3. Classify each item
 
@@ -46,37 +45,12 @@ For each found comment, classify the reason:
 
 ### 4. Generate backlog document
 
-Write to `.claude/.bfeature-temp/<slug>-backlog.md`:
+Write to `.claude/.bfeature-temp/<slug>-backlog.md`. The file contains **only** a markdown table — no title, no header, no prose. See `example-dark-mode-backlog.md` in this skill's directory for the exact format.
 
-```markdown
-# <slug> — Backlog
-
-Items discovered during implementation of `<slug>`. All items are labeled with the feature for tracking.
-
-| # | Relevance | Classification | File | Line | Description |
-|---|-----------|---------------|------|------|-------------|
-| 1 | tagged | temporary-solution | src/foo.ts | 42 | Replace naive lookup with index |
-| 2 | unclear | tech-debt | src/bar.ts | 17 | Refactor error handling |
-| ... |
-
-## Details
-
-### 1. Description (file:line)
-
-**Relevance:** tagged | related | unclear
-**Classification:** temporary-solution
-**Label:** feat/<slug>
-
-**Context:**
-\`\`\`
-<surrounding code>
-\`\`\`
-
-**Rationale:** <why this was deferred>
-**Suggested resolution:** <what should be done>
-
----
-```
+Key rules:
+- The `Feature` column contains the slug. Prefix with `[?]` when relevance to the feature is unclear.
+- The `Location` column uses `file:line` format (e.g., `src/foo.ts:42`).
+- This format is designed to be mergeable across features — multiple backlog files can be concatenated.
 
 ### 5. Report
 
