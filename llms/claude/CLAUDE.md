@@ -26,7 +26,7 @@ Reusable skills live in `./skills/`. Each skill has a `SKILL.md` with frontmatte
 ### Entry points for feature work
 
 - **From GitHub**: `/gh-issue` pick → assigns + kicks off `/bfeature`
-- **From Jira**: `/jira` pick or URL → assigns + transitions to "In Progress" + kicks off `/bfeature`
+- **From Jira**: `/jira-issue` pick or URL → assigns + transitions to "In Progress" + kicks off `/bfeature`
 - **Direct**: `/bfeature <idea>` for full features (brainstorm → spec → design review → plan → execute)
 - **Quick**: `/bfeature:quick <idea>` for small bugfixes and focused changes (refine → plan → execute)
 

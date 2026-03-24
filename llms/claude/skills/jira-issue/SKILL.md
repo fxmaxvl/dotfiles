@@ -1,5 +1,5 @@
 ---
-name: jira
+name: jira-issue
 model: sonnet
 description: Pick Jira tickets to work on or interact with them (read, transition, comment). Discovers Jira MCP tools dynamically.
 argument-hint: [optional: "pick", "pick PROJECT", or Jira ticket URL]
