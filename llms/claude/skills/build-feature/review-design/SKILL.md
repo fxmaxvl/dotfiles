@@ -1,11 +1,11 @@
 ---
-name: review-design
-description: Review a spec for architecture completeness, edge cases, and missing requirements.
+name: review-design-analyze
+description: Analyze a feature spec for architecture completeness, edge cases, and requirements. Produces a structured PASS/CONCERN report file.
 disable-model-invocation: true
-model: haiku
+model: opus
 ---
 
-Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Review `.claude/.build-feature-temp/<slug>-spec.md` and evaluate it against the following criteria. For each criterion, state whether it passes or has concerns.
+Read `.claude/.build-feature-temp/build-state.json` to find the `slug`. Review `.claude/.build-feature-temp/<slug>-spec.md` against the criteria below.
 
 If `.claude/.build-feature-temp/<slug>-qa.md` exists, read it as well — use it to check that the spec faithfully represents what the user said during brainstorm, and flag any requirements that were mentioned in the Q&A but are missing or misrepresented in the spec.
 
@@ -30,18 +30,31 @@ If `.claude/.build-feature-temp/<slug>-qa.md` exists, read it as well — use it
 - Are non-functional requirements addressed (performance, security, accessibility)?
 - Are there ambiguities or unstated assumptions?
 
-## Output Format
+## Output
 
-For each criterion, output one of:
-- **PASS** — no concerns
-- **CONCERN** — describe the issue and suggest a fix
+Save a report to `.claude/.build-feature-temp/<slug>-design-report.md`.
 
-If any criterion has a CONCERN:
-1. List all concerns with suggested fixes
-2. Ask the user: "Should I update the spec to address these concerns?"
-3. If yes, update the spec and re-run this review
-4. Maximum 3 review cycles — after that, pause and ask the user to intervene
+If all criteria pass:
 
-If all criteria PASS:
-1. State "Design review passed — spec is ready for planning"
-2. Ask the user for approval to proceed
+```markdown
+# Design Review Report
+STATUS: PASS
+```
+
+If any criterion has concerns:
+
+```markdown
+# Design Review Report
+STATUS: CONCERN
+
+## Concerns
+
+### <Criterion name>
+- <specific concern and suggested fix>
+- <specific concern and suggested fix>
+
+### <Criterion name>
+- <specific concern and suggested fix>
+```
+
+Do **not** ask the user any questions and do **not** modify the spec — the orchestrator handles that.

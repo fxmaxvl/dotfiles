@@ -20,14 +20,16 @@ Each sub-skill declares a `model` field in its SKILL.md frontmatter. When delega
 |-----------|------------|-------|-----------|
 | `brainstorm` (gather) | Skill tool (inline) | — | Interactive Q&A — must stay in main conversation |
 | `brainstorm/generate` | Agent tool | opus | Spec synthesis from Q&A — reasoning-heavy, no interaction needed |
-| `review-design` | Agent tool | opus | Critical architectural analysis |
+| `review-design` | Agent tool | opus | Architectural analysis — produces report, no user interaction |
+| `review-design/fix` | Agent tool | sonnet | Applies spec fixes — execution task |
 | `plan` | Agent tool | opus | Deep reasoning for TDD blueprints |
 | `do-todo` | Agent tool | sonnet | Fast, execution-focused coding |
-| `review-impl` | Agent tool | opus | Critical code review |
+| `review-impl` | Agent tool | opus | Implementation analysis — produces report, no user interaction |
+| `review-impl/fix` | Agent tool | sonnet | Applies code fixes — execution task |
 | `collect-todos` | Agent tool | sonnet | Mechanical scanning task |
 | `finalize` (Phase 7) | Agent tool | sonnet | Mechanical git/PR operations |
 
-When invoking sub-skills as agents, set the `model` parameter accordingly. For example: `Agent(model: "sonnet", ...)` for `do-todo`. The `brainstorm` gather phase is the only sub-skill invoked inline via the Skill tool — do **not** wrap it in an Agent call.
+`brainstorm` (gather) is the only sub-skill invoked inline via the Skill tool — do **not** wrap it in an Agent call. All others use the Agent tool with the declared model.
 
 ## Phase Flow
 
@@ -146,13 +148,20 @@ When `.claude/.build-feature-temp/<slug>-spec.md` is detected:
 
 ## Phase 2 — Review Design
 
-1. Invoke the `review-design` skill
-2. The review skill will evaluate `<slug>-spec.md` and report PASS/CONCERN
-3. If concerns are found, the review skill handles the fix loop (max 3 cycles)
-4. When review passes:
-   - Update state: `phase` to `"plan"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Tell the user: "Design review passed. Run `/build-feature` to continue to planning."
-   - **Exit.**
+Run up to 3 analyze → fix cycles:
+
+1. Invoke the `review-design` skill as an Agent (model: opus)
+2. Read `.claude/.build-feature-temp/<slug>-design-report.md`
+3. If `STATUS: PASS`: proceed to step 5
+4. If `STATUS: CONCERN`:
+   - Show the concerns to the user
+   - Ask: "Should I fix these concerns?"
+   - If yes: invoke `review-design/fix` as an Agent (model: sonnet), then go back to step 1
+   - If no (user accepts as-is): proceed to step 5
+   - If this was already the 3rd cycle: tell the user "Max review cycles reached — please review the spec manually" and stop
+5. Update state: `phase` to `"plan"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
+6. Tell the user: "Design review passed. Run `/build-feature` to continue to planning."
+7. **Exit.**
 
 ## Phase 3 — Plan
 
@@ -174,13 +183,20 @@ When `.claude/.build-feature-temp/<slug>-spec.md` is detected:
 
 ## Phase 5 — Review Implementation
 
-1. Invoke the `review-impl` skill
-2. The review skill will evaluate the implementation against `<slug>-spec.md` + `<slug>-plan.md`
-3. If concerns are found, the review skill handles the fix loop (max 3 cycles)
-4. When review passes:
-   - Update state: `phase` to `"collect-todos"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Tell the user: "Implementation review passed. Run `/build-feature` to continue to TODO collection."
-   - **Exit.**
+Run up to 3 analyze → fix cycles:
+
+1. Invoke the `review-impl` skill as an Agent (model: opus)
+2. Read `.claude/.build-feature-temp/<slug>-impl-report.md`
+3. If `STATUS: PASS`: proceed to step 5
+4. If `STATUS: CONCERN`:
+   - Show the concerns to the user
+   - Ask: "Should I fix these concerns?"
+   - If yes: invoke `review-impl/fix` as an Agent (model: sonnet), then go back to step 1
+   - If no (user accepts as-is): proceed to step 5
+   - If this was already the 3rd cycle: tell the user "Max review cycles reached — please review the implementation manually" and stop
+5. Update state: `phase` to `"collect-todos"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
+6. Tell the user: "Implementation review passed. Run `/build-feature` to continue to TODO collection."
+7. **Exit.**
 
 ## Phase 6 — Collect TODOs
 
