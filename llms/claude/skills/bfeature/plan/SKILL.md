@@ -50,8 +50,3 @@ Include a **"Quality Gates"** section in `<slug>-plan.md` that documents these c
 - **Lint:** `npm run lint` / auto-fix: `npm run lint:fix`
 ```
 
-Also add a final todo item to `<slug>-todo.md`:
-
-```
-- [ ] Run quality gates: tests green, lint clean
-```
