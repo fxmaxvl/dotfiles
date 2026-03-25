@@ -1,5 +1,5 @@
 ---
-name: bfeature-quick
+name: bfeature:quick
 description: Orchestrate a lightweight refine → plan → execute workflow for small changes. Skips spec generation and design review.
 disable-model-invocation: false
 argument-hint: [idea description, Jira ticket URL, or GH-ISSUE:<number>]
