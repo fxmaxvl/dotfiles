@@ -140,8 +140,9 @@ Run up to 3 analyze → fix cycles:
    - If `jira.enabled`, include the ticket key (e.g., `feat(PROJ-123): address review concerns`)
 3. Push the branch to remote
 4. Create a PR using `gh pr create`:
-   - **If `github_issue.enabled` is `true`:** include `Closes #<github_issue.number>` in the PR body
-   - Include a summary of the change in the PR body
+   - **PR body:** Read `.claude/.bfeature-temp/<slug>-plan.md` and write a short summary (2–3 sentences max) of what the change does and why — no test descriptions, no minor change lists, no implementation details
+   - **If `github_issue.enabled` is `true`:** append `Closes #<github_issue.number>` to the PR body
+   - **If `jira.enabled` is `true`:** append a link to the Jira ticket (`jira.ticket_url`) in the PR body
 5. **If `jira.enabled` is `true`:**
    - Invoke the `jira-issue` skill: `transition-to(jira.ticket_key, "To Review")`
    - Invoke the `jira-issue` skill: `add-comment(jira.ticket_key, "PR: <pr_url>")`
