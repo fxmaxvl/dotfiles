@@ -2,7 +2,7 @@
 name: bfeature
 description: Orchestrate the full brainstorm → plan → execute workflow with review gates between phases.
 disable-model-invocation: false
-argument-hint: [idea description, Jira ticket URL, or GH-ISSUE:<number>]
+argument-hint: [--quick] [idea description, Jira ticket URL, or GH-ISSUE:<number>]
 allowed-tools: Read, Write, Grep, Glob, Bash(git *), Bash(gh *), mcp__*__jira__*
 ---
 
@@ -41,7 +41,7 @@ Each sub-skill declares a `model` field in its SKILL.md frontmatter. When delega
 init → brainstorm → review-design ⇄ fix → plan → execute → verify → review-impl ⇄ fix → verify (silent) → finalize (commit/push/ticket) → collect-todos? → cleanup → done
 ```
 
-**Quick mode** (invoked via `/bfeature:quick`):
+**Quick mode** (invoked via `/bfeature --quick`):
 ```
 init → refine → plan (from Q&A) → execute → verify → review-impl ⇄ fix → verify (silent) → finalize (commit/push/ticket) → collect-todos? → cleanup → done
 ```
@@ -50,9 +50,12 @@ Quick mode skips spec generation and design review. The `refine` phase replaces 
 
 ## On Invocation
 
-1. Check if `.claude/.bfeature-temp/build-state.json` exists
-2. If it does not exist: start from Phase 0 (init)
-3. If it exists: read it and resume:
+1. **Detect `--quick` flag:** Check if `$ARGUMENTS` starts with or contains `--quick`. If it does:
+   - Set `quick_mode` to `true`
+   - Strip `--quick` from `$ARGUMENTS` before using the remainder as the idea
+2. Check if `.claude/.bfeature-temp/build-state.json` exists
+3. If it does not exist: start from Phase 0 (init)
+4. If it exists: read it and resume:
    - If `worktree_path` is set: the session CWD may be the main repo, not the worktree. Use `Bash(cd <worktree_path>)` to switch into it before doing any work. Do NOT call `EnterWorktree` again — the worktree already exists.
    - If `phase_status` is `"awaiting_approval"`: ask the user "Paused before [current phase]. Ready to proceed?" — if yes, set `phase_status` to `"in_progress"`, update state, and execute the current phase; if no, exit
    - Otherwise: resume the current phase from where it left off
@@ -116,7 +119,7 @@ Quick mode skips spec generation and design review. The `refine` phase replaces 
 
    - If a Jira ticket was detected, set `jira.enabled` to `true`, `jira.ticket_key` to the extracted key, and `jira.ticket_url` to the original URL.
    - If a worktree was created, set `worktree_path` to the absolute path of the worktree directory.
-   - The `mode` field defaults to `"full"`. When invoked via `/bfeature:quick`, set `mode` to `"quick"` and `phase` to `"refine"` instead of `"brainstorm"`.
+   - The `mode` field defaults to `"full"`. If `--quick` flag was detected, set `mode` to `"quick"` and `phase` to `"refine"` instead of `"brainstorm"`.
 
 7. Proceed to Phase 1 (brainstorm for full mode, refine for quick mode).
 

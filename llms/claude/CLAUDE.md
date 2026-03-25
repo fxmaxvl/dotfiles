@@ -45,6 +45,6 @@ Reusable skills live in `./skills/`. Each skill has a `SKILL.md` with frontmatte
 - **From GitHub**: `/gh-issue` — browse and pick an issue, then kicks off `/bfeature`
 - **From Jira**: `/jira-issue` — browse, pick, or pass a URL; assigns + transitions to "In Progress", then kicks off `/bfeature`
 - **Direct**: `/bfeature <idea>` — full workflow for new features
-- **Quick**: `/bfeature:quick <idea>` — lightweight workflow for small bugfixes and focused changes
+- **Quick**: `/bfeature --quick <idea>` — lightweight workflow for small bugfixes and focused changes
 
 
