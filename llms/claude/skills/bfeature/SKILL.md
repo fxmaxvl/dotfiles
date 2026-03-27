@@ -16,21 +16,21 @@ All build artifacts (spec, plan, todo, backlog, build-state.json) live in `<proj
 
 Each sub-skill declares a `model` field in its SKILL.md frontmatter. When delegating to a sub-skill via the Agent tool, **always pass the declared model**. The current routing:
 
-| Sub-skill | Invocation | Model | Rationale |
-|-----------|------------|-------|-----------|
-| `brainstorm` (gather) | Skill tool (inline) | — | Interactive Q&A — must stay in main conversation |
-| `brainstorm/generate` | Agent tool | opus | Spec synthesis from Q&A — reasoning-heavy, no interaction needed |
-| `refine` | Skill tool (inline) | — | Interactive Q&A — must stay in main conversation (quick mode only) |
-| `review-design` | Agent tool | opus | Architectural analysis — produces report, no user interaction |
-| `review-design/fix` | Agent tool | sonnet | Applies spec fixes — execution task |
-| `plan` | Agent tool | opus | Deep reasoning for TDD blueprints |
-| `do-todo` | Agent tool | sonnet | Fast, execution-focused coding |
-| `verify` | Agent tool | sonnet | Quality gates — runs tests (monorepo-aware) and lint with auto-fix |
-| `review-impl` | Agent tool | opus | Implementation analysis — produces report, no user interaction |
-| `review-impl/fix` | Agent tool | sonnet | Applies code fixes — execution task |
-| `collect-todos` (Phase 7, optional) | Agent tool | sonnet | Mechanical scanning task — skipped if user declines |
+| Sub-skill | Skill name | Invocation | Model | Rationale |
+|-----------|------------|------------|-------|-----------|
+| brainstorm (gather) | `brainstorm-gather` | Skill tool (inline) | — | Interactive Q&A — must stay in main conversation |
+| brainstorm/generate | `brainstorm-generate` | Agent tool | opus | Spec synthesis from Q&A — reasoning-heavy, no interaction needed |
+| refine | `bfeature-refine` | Skill tool (inline) | — | Interactive Q&A — must stay in main conversation (quick mode only) |
+| review-design | `review-design-analyze` | Agent tool | opus | Architectural analysis — produces report, no user interaction |
+| review-design/fix | `review-design-fix` | Agent tool | sonnet | Applies spec fixes — execution task |
+| plan | `plan` | Agent tool | opus | Deep reasoning for TDD blueprints |
+| do-todo | `do-todo` | Agent tool | sonnet | Fast, execution-focused coding |
+| verify | `verify` | Agent tool | sonnet | Quality gates — runs tests (monorepo-aware) and lint with auto-fix |
+| review-impl | `review-impl-analyze` | Agent tool | opus | Implementation analysis — produces report, no user interaction |
+| review-impl/fix | `review-impl-fix` | Agent tool | sonnet | Applies code fixes — execution task |
+| collect-todos (Phase 7, optional) | `collect-todos` | Agent tool | sonnet | Mechanical scanning task — skipped if user declines |
 
-`brainstorm` (gather) and `refine` are the only sub-skills invoked inline via the Skill tool — do **not** wrap them in an Agent call. All others use the Agent tool with the declared model.
+`brainstorm-gather` and `bfeature-refine` are the only sub-skills invoked inline via the Skill tool — do **not** wrap them in an Agent call. All others use the Agent tool with the declared model.
 
 **Phase 6 (Finalize) and Phase 8 (Cleanup) are executed directly by the orchestrator** — they have no sub-skill files. The finalize logic is defined inline in this file (see Phase 6 below).
 
@@ -140,16 +140,16 @@ If state has `phase` = `"brainstorm"` and `phase_status` = `"waiting_answer"`:
 ### If `jira.enabled` is `true`:
 1. Invoke the `jira` skill: `read-ticket(jira.ticket_key)` to fetch the ticket's description, comments, and context
 2. Synthesize an overall description from the ticket content
-3. Invoke the `brainstorm` skill **inline** (via Skill tool, not Agent) with the synthesized description
+3. Invoke the `brainstorm-gather` skill **inline** (via Skill tool, not Agent) with the synthesized description
    - Runs in the main conversation — user interaction is fully available
    - Gather saves Q&A to `.claude/.bfeature-temp/<slug>-qa.md`
-4. Invoke the `brainstorm/generate` skill as an Agent (model: opus) to produce the spec from the Q&A
+4. Invoke the `brainstorm-generate` skill as an Agent (model: opus) to produce the spec from the Q&A
 
 ### If `jira.enabled` is `false`:
-1. Invoke the `brainstorm` skill **inline** (via Skill tool, not Agent) with the idea from state
+1. Invoke the `brainstorm-gather` skill **inline** (via Skill tool, not Agent) with the idea from state
    - Runs in the main conversation — user interaction is fully available
    - Gather saves Q&A to `.claude/.bfeature-temp/<slug>-qa.md`
-2. Invoke the `brainstorm/generate` skill as an Agent (model: opus) to produce the spec from the Q&A
+2. Invoke the `brainstorm-generate` skill as an Agent (model: opus) to produce the spec from the Q&A
 
 ### Escalating questions to Jira
 If during brainstorm the user cannot answer a clarifying question and asks to post it to Jira (`jira.enabled` must be `true`):
@@ -169,7 +169,7 @@ When `.claude/.bfeature-temp/<slug>-spec.md` is detected:
 
 Skipped entirely in full mode — full mode uses Phase 1 (Brainstorm) instead.
 
-1. Invoke the `refine` skill **inline** (via Skill tool, not Agent) with the idea from state
+1. Invoke the `bfeature-refine` skill **inline** (via Skill tool, not Agent) with the idea from state
    - Runs in the main conversation — user interaction is fully available
    - Saves Q&A to `.claude/.bfeature-temp/<slug>-qa.md`
 2. When `.claude/.bfeature-temp/<slug>-qa.md` is detected:
@@ -184,13 +184,13 @@ Skipped entirely in quick mode.
 
 Run up to 3 analyze → fix cycles:
 
-1. Invoke the `review-design` skill as an Agent (model: opus)
+1. Invoke the `review-design-analyze` skill as an Agent (model: opus)
 2. Read `.claude/.bfeature-temp/<slug>-design-report.md`
 3. If `STATUS: PASS`: proceed to step 5
 4. If `STATUS: CONCERN`:
    - Show the concerns to the user
    - Ask: "Should I fix these concerns?"
-   - If yes: invoke `review-design/fix` as an Agent (model: sonnet), then go back to step 1
+   - If yes: invoke `review-design-fix` as an Agent (model: sonnet), then go back to step 1
    - If no (user accepts as-is): proceed to step 5
    - If this was already the 3rd cycle: tell the user "Max review cycles reached — please review the spec manually" and stop
 5. Update state: `phase` to `"plan"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
@@ -232,13 +232,13 @@ Run up to 3 analyze → fix cycles:
 
 Run up to 3 analyze → fix cycles:
 
-1. Invoke the `review-impl` skill as an Agent (model: opus)
+1. Invoke the `review-impl-analyze` skill as an Agent (model: opus)
 2. Read `.claude/.bfeature-temp/<slug>-impl-report.md`
 3. If `STATUS: PASS`: proceed to step 5
 4. If `STATUS: CONCERN`:
    - Show the concerns to the user
    - Ask: "Should I fix these concerns?"
-   - If yes: invoke `review-impl/fix` as an Agent (model: sonnet), then go back to step 1
+   - If yes: invoke `review-impl-fix` as an Agent (model: sonnet), then go back to step 1
    - If no (user accepts as-is): proceed to step 5
    - If this was already the 3rd cycle: tell the user "Max review cycles reached — please review the implementation manually" and stop
 5. Update state: `phase` to `"finalize"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
