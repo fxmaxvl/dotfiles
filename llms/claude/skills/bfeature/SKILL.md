@@ -34,6 +34,18 @@ Each sub-skill declares a `model` field in its SKILL.md frontmatter. When delega
 
 **Phase 6 (Finalize) and Phase 8 (Cleanup) are executed directly by the orchestrator** — they have no sub-skill files. The finalize logic is defined inline in this file (see Phase 6 below).
 
+## Status Banners
+
+At the start of every phase, print a banner to the conversation so the user knows where they are. Use this exact format:
+
+```
+── bfeature | Name ───────────────────────────────
+```
+
+For example: `── bfeature | Plan ───────────────────────────────`
+
+Print the banner as plain text (not in a code block). Do this before any other work in the phase.
+
 ## Phase Flow
 
 **Full mode** (default):
@@ -61,6 +73,8 @@ Quick mode skips spec generation and design review. The `refine` phase replaces 
    - Otherwise: resume the current phase from where it left off
 
 ## Phase 0 — Init
+
+Print banner: `── bfeature | Init ───────────────────────────────`
 
 1. **Detect GitHub issue:** Check if `$ARGUMENTS` contains a `GH-ISSUE:<number>` marker. If it does:
    - Extract the issue number
@@ -127,6 +141,8 @@ Quick mode skips spec generation and design review. The `refine` phase replaces 
 
 ## Phase 1 — Brainstorm (full mode only)
 
+Print banner: `── bfeature | Brainstorm ───────────────────────────────`
+
 Skipped entirely in quick mode — quick mode uses Phase 1Q (Refine) instead.
 
 ### Resuming from `waiting_answer`
@@ -167,6 +183,8 @@ When `.claude/.bfeature-temp/<slug>-spec.md` is detected:
 
 ## Phase 1Q — Refine (quick mode only)
 
+Print banner: `── bfeature | Refine ───────────────────────────────`
+
 Skipped entirely in full mode — full mode uses Phase 1 (Brainstorm) instead.
 
 1. Invoke the `bfeature-refine` skill **inline** (via Skill tool, not Agent) with the idea from state
@@ -179,6 +197,8 @@ Skipped entirely in full mode — full mode uses Phase 1 (Brainstorm) instead.
    - If no: **Exit** (re-invoke `/bfeature` when ready)
 
 ## Phase 2 — Review Design (full mode only)
+
+Print banner: `── bfeature | Review Design ───────────────────────────────`
 
 Skipped entirely in quick mode.
 
@@ -200,6 +220,8 @@ Run up to 3 analyze → fix cycles:
 
 ## Phase 3 — Plan
 
+Print banner: `── bfeature | Plan ───────────────────────────────`
+
 1. Invoke the `plan` skill (it reads the appropriate source based on `mode` and produces `.claude/.bfeature-temp/<slug>-plan.md` + `.claude/.bfeature-temp/<slug>-todo.md`)
 2. When both files are detected:
    - Update state: set `artifacts.plan` to `"<slug>-plan.md"`, `artifacts.todo` to `"<slug>-todo.md"`, `phase` to `"execute"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
@@ -209,6 +231,8 @@ Run up to 3 analyze → fix cycles:
 
 ## Phase 4 — Execute
 
+Print banner: `── bfeature | Execute ───────────────────────────────`
+
 1. Invoke the `do-todo` skill as an Agent (model: sonnet) — it loops internally until all items are checked
 2. When it completes:
    - Update state: `phase` to `"verify"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
@@ -217,6 +241,8 @@ Run up to 3 analyze → fix cycles:
    - If no: **Exit** (re-invoke `/bfeature` when ready)
 
 ## Phase 4.5 — Verify
+
+Print banner: `── bfeature | Verify ───────────────────────────────`
 
 1. Invoke the `verify` skill as an Agent (model: sonnet)
    - Detects project type, consults conventions, determines test and lint commands
@@ -229,6 +255,8 @@ Run up to 3 analyze → fix cycles:
    - If no: **Exit** (re-invoke `/bfeature` when ready)
 
 ## Phase 5 — Review Implementation
+
+Print banner: `── bfeature | Review Implementation ───────────────────────────────`
 
 Run up to 3 analyze → fix cycles:
 
@@ -247,6 +275,8 @@ Run up to 3 analyze → fix cycles:
 8. If no: **Exit** (re-invoke `/bfeature` when ready)
 
 ## Phase 6 — Finalize
+
+Print banner: `── bfeature | Finalize ───────────────────────────────`
 
 1. **Silent quality gate:** Before touching git, invoke the `verify` skill as an Agent (model: sonnet) one final time.
    - This catches any regressions introduced by review-impl fix cycles
@@ -272,6 +302,8 @@ Run up to 3 analyze → fix cycles:
 
 ## Phase 7 — Collect TODOs (optional)
 
+Print banner: `── bfeature | Collect TODOs ───────────────────────────────`
+
 1. Invoke the `collect-todos` skill as an Agent (model: sonnet)
 2. The skill scans changes introduced by the feature branch for TODO comments, classifies them, and generates `.claude/.bfeature-temp/<slug>-backlog.md`
 3. When complete:
@@ -279,6 +311,8 @@ Run up to 3 analyze → fix cycles:
 4. Proceed to Phase 8 (Cleanup)
 
 ## Phase 8 — Cleanup
+
+Print banner: `── bfeature | Cleanup ───────────────────────────────`
 
 Run as a **background Agent** (`run_in_background: true`, model: sonnet) — fire and forget, do not wait for completion.
 
