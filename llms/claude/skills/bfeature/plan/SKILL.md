@@ -50,3 +50,14 @@ Include a **"Quality Gates"** section in `<slug>-plan.md` that documents these c
 - **Lint:** `npm run lint` / auto-fix: `npm run lint:fix`
 ```
 
+## Deployment notes — multi-package monorepos
+
+If a monorepo is detected **and** the feature touches more than one package, generate `.claude/.bfeature-temp/<slug>-deployment.md` covering:
+
+- **Affected packages** — list each package with a one-line description of what changes
+- **Deploy order** — if packages depend on each other (e.g., proto/API package must deploy before consumers), document the required sequence
+- **Coordination notes** — anything that requires timing or cross-team coordination (e.g., "session-service must be deployed before chatbot-service or attachment fields will be ignored")
+- **Rollback notes** — if any change is hard to roll back (schema migrations, proto field additions), call it out
+
+If the feature touches only one package, skip this file entirely — no empty deployment docs.
+

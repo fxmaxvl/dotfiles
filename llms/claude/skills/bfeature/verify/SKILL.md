@@ -56,12 +56,12 @@ Run the full test suite (all tests in scope, not just changed files — the goal
    - Fix the code or test causing the failure
    - Re-run the test suite
    - Repeat until green
-4. **If the failing test appears unrelated to our changes:**
+4. **If the failing test is in a file NOT in the Step 2 changed-files list:**
+   - Treat this as a **pre-existing failure** — it existed before this feature branch
+   - **Do NOT attempt to fix it**, even if the fix looks obvious
    - Stop and report to the user:
-     > "Unrelated test failure detected: `[test name / file]`. This doesn't appear to be caused by our changes. Should I try to fix it, or skip and continue?"
-   - Wait for the user's response before proceeding
-   - If user says fix: attempt a fix, then re-run
-   - If user says skip: note it and proceed to lint
+     > "Pre-existing test failure detected: `[test name / file]`. This file was not changed by this feature — the failure likely predates this branch. Skipping and continuing. Note: `[brief description]`."
+   - Proceed to lint without waiting for a response
 
 All tests in scope must be green (or explicitly skipped by user) before proceeding.
 
@@ -79,6 +79,7 @@ Run the linter. **If issues are found:**
 2. If yes → run it, then re-run the linter to verify
 3. If still issues after auto-fix, or no auto-fix available → fix the issues manually (do NOT suppress or disable linter rules)
 4. Re-run the linter to confirm green
+5. **If any files were modified during lint fixing (auto-fix or manual):** commit them immediately — read `conventions/git.md` for format, use `style:` prefix (e.g., `style: apply prettier auto-fixes`). Do not leave lint fixes as unstaged changes.
 
 All lint checks must pass before completing.
 
@@ -89,4 +90,4 @@ When both tests and lint are green, print a brief summary:
 - Lint: clean
 
 Do **not** modify any plan, spec, or state files — the orchestrator manages state.
-Do **not** ask the user any questions unless an unrelated test failure is detected (Step 3).
+Do **not** ask the user any questions during execution.
