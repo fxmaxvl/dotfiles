@@ -16,6 +16,8 @@ All build artifacts (spec, plan, todo, backlog, build-state.json) live in `<proj
 
 Sub-skills are **not registered** with the Skill tool and cannot be invoked via `Skill(name)`. Always locate them by reading their SKILL.md directly.
 
+**Reading the sub-skill's SKILL.md is mandatory before executing that phase.** Never skip this step and proceed directly to writing code or running commands. The sub-skill files contain the authoritative instructions for each phase — ignoring them causes missed quality gates, wrong outputs, and broken flows.
+
 To find a sub-skill's SKILL.md, use: `Glob("~/.claude/skills/bfeature/**/SKILL.md")` — then match by the path column in the routing table below. If the Glob returns no results, try `Glob("skills/bfeature/**/SKILL.md")` (some setups use a local `skills/` directory).
 
 **Invocation patterns:**
@@ -67,7 +69,7 @@ init → brainstorm → review-design ⇄ fix → plan → execute → verify �
 init → refine → plan (from Q&A) → execute → verify → review-impl ⇄ fix → verify (silent) → finalize (commit/push/ticket) → collect-todos? → cleanup → done
 ```
 
-Quick mode skips spec generation and design review. The `refine` phase replaces brainstorm with a lighter Q&A that feeds directly into planning.
+Quick mode skips **only** brainstorm and review-design. Every other phase — refine, plan, execute, verify, review-impl, verify (silent), finalize — is **mandatory** regardless of how simple or obvious the fix appears. Do not collapse, merge, or skip phases because the task looks trivial. The phases exist as quality gates that apply at all complexity levels.
 
 ## On Invocation
 
