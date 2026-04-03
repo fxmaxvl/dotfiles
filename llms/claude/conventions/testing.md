@@ -6,6 +6,12 @@
 - If the logs are supposed to contain errors, capture and test it.
 - NO EXCEPTIONS POLICY: Under no circumstances should you mark any test type as "not applicable". Every project, regardless of size or complexity, MUST have unit tests, integration tests, AND end-to-end tests. If you believe a test type doesn't apply, you need the human to say exactly "I AUTHORIZE YOU TO SKIP WRITING TESTS THIS TIME"
 
+## Test context
+
+All test setup state must be collected into a single context object (e.g. `testCtx`, `ctx`, `TestCtx`). It must be initialized before each test via a dedicated initializer — a factory function, constructor, or equivalent. Setup variables must not be declared individually and scattered across the describe/test scope.
+
+**Why:** scattered setup variables are easy to forget to reinitialize, which causes state to bleed between tests (safety). A single context object is one place to look for all setup state (readability), and a consistent pattern across suites makes tests easier to navigate and review (uniformity).
+
 ## We practice TDD. That means:
 
 - Write tests before writing the implementation code
