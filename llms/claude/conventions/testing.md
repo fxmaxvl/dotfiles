@@ -12,6 +12,19 @@ All test setup state must be collected into a single context object (e.g. `testC
 
 **Why:** scattered setup variables are easy to forget to reinitialize, which causes state to bleed between tests (safety). A single context object is one place to look for all setup state (readability), and a consistent pattern across suites makes tests easier to navigate and review (uniformity).
 
+## Unit test isolation
+
+Unit tests MUST be fully isolated from external systems. This means:
+
+- No HTTP/network calls (mock fetch, axios, SDK clients, etc.)
+- No file system access beyond temp/in-memory
+- No database connections
+- No environment-specific dependencies (env vars, secrets, ports)
+
+If your unit test makes a real network call, it is an **integration test**, not a unit test. Name it and place it accordingly.
+
+Use dependency injection, mocks, or stubs to control all I/O at the boundary. The test must pass offline and deterministically every time.
+
 ## We practice TDD. That means:
 
 - Write tests before writing the implementation code
