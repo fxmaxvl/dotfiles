@@ -4,14 +4,16 @@ This applies to **all work in this repo**, regardless of whether a skill is invo
 
 Before writing code, committing, writing tests, reviewing code, or making architectural decisions — read the relevant doc first. Do not infer conventions from git history or surrounding code. Always check the doc.
 
-| Action | Read first |
-|--------|-----------|
-| Writing or modifying code | `./conventions/dev.md` |
-| Writing or modifying tests | `./conventions/testing.md` |
-| Committing | `./conventions/git.md` |
-| Designing architecture | `./conventions/architecture.md` |
-| TypeScript / JavaScript work | `./conventions/typescript.md` |
-| Reviewing code | `./conventions/code-review.md` |
+To find a convention file, use Glob with `**/.claude/conventions/<name>.md`. Use the closest match to the current working directory. If not found, fall back to `~/.claude/conventions/<name>.md`.
+
+| Action | Convention file |
+|--------|----------------|
+| Writing or modifying code | `dev.md` |
+| Writing or modifying tests | `testing.md` |
+| Committing | `git.md` |
+| Designing architecture | `architecture.md` |
+| TypeScript / JavaScript work | `typescript.md` |
+| Reviewing code | `code-review.md` |
 
 ---
 
