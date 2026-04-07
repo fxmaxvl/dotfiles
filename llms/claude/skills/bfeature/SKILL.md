@@ -79,7 +79,6 @@ Quick mode skips **only** brainstorm and review-design. Every other phase — re
 2. Check if `.claude/.bfeature-temp/build-state.json` exists
 3. If it does not exist: start from Phase 0 (init)
 4. If it exists: read it and resume:
-   - If `worktree_path` is set: the session CWD may be the main repo, not the worktree. Use `Bash(cd <worktree_path>)` to switch into it before doing any work. Do NOT call `EnterWorktree` again — the worktree already exists.
    - If `phase_status` is `"awaiting_approval"`: ask the user "Paused before [current phase]. Ready to proceed?" — if yes, set `phase_status` to `"in_progress"`, update state, and execute the current phase; if no, exit
    - Otherwise: resume the current phase from where it left off
 
@@ -101,15 +100,10 @@ Print banner: `── bfeature | Init ──────────────
 4. Create the artifacts directory: `mkdir -p <project_root>/.claude/.bfeature-temp/`
 5. **Branch selection:**
    - Check the current git branch
-   - If on `master` (or the repo's main branch): create `feat/<slug>` from master and set up a worktree (see below)
+   - If on `master` (or the repo's main branch): create and checkout `feat/<slug>` from master
    - If on a non-master branch (e.g., `feat/something`): ask the user — "You're currently on `<branch>`. Do you want to continue working here, or create a new branch `feat/<slug>` from master?"
-     - If the user chooses to continue: stay on the current branch, use the current branch name to derive the slug (strip `feat/` prefix if present); no worktree is created
-     - If the user chooses a new branch: create `feat/<slug>` from master and set up a worktree (see below)
-
-   **Creating a new branch with a worktree:**
-   - Call `EnterWorktree(name: "feat/<slug>")` — this creates the branch from HEAD and switches the session into the worktree
-   - The worktree is created at `.claude/worktrees/feat/<slug>` inside the project
-   - Record the absolute worktree path in state as `worktree_path`
+     - If the user chooses to continue: stay on the current branch, use the current branch name to derive the slug (strip `feat/` prefix if present)
+     - If the user chooses a new branch: create and checkout `feat/<slug>` from master
 
 6. Create `.claude/.bfeature-temp/build-state.json`:
 
@@ -136,14 +130,12 @@ Print banner: `── bfeature | Init ──────────────
     "todo": null,
     "backlog": null
   },
-  "worktree_path": null,
   "created_at": "<current ISO timestamp>",
   "updated_at": "<current ISO timestamp>"
 }
 ```
 
    - If a Jira ticket was detected, set `jira.enabled` to `true`, `jira.ticket_key` to the extracted key, and `jira.ticket_url` to the original URL.
-   - If a worktree was created, set `worktree_path` to the absolute path of the worktree directory.
    - The `mode` field defaults to `"full"`. If `--quick` flag was detected, set `mode` to `"quick"` and `phase` to `"refine"` instead of `"brainstorm"`.
 
 7. Proceed to Phase 1 (brainstorm for full mode, refine for quick mode).
@@ -330,9 +322,6 @@ Run as a **background Agent** (`run_in_background: true`, model: sonnet) — fir
 The agent should:
 1. Delete `.claude/.bfeature-temp/build-state.json`
 2. Delete these ephemeral handoff files if they exist: `<slug>-qa.md`, `<slug>-design-report.md`, `<slug>-impl-report.md`
-3. If `worktree_path` is set in state:
-   - If this session entered the worktree via `EnterWorktree`: call `ExitWorktree(action: "remove")`
-   - Otherwise (resumed across sessions): run `git worktree remove <worktree_path>` via Bash
 
 ## State Updates
 
