@@ -6,6 +6,8 @@ Before writing code, committing, writing tests, reviewing code, or making archit
 
 To find a convention file, use Glob with `**/.claude/conventions/<name>.md`. Use the closest match to the current working directory. If not found, fall back to `~/.claude/conventions/<name>.md`.
 
+**Step 1 — Action-specific convention:** Read the file that matches the action:
+
 | Action | Convention file |
 |--------|----------------|
 | Writing or modifying code | `dev.md` |
@@ -14,6 +16,8 @@ To find a convention file, use Glob with `**/.claude/conventions/<name>.md`. Use
 | Designing architecture | `architecture.md` |
 | TypeScript / JavaScript work | `typescript.md` |
 | Reviewing code | `code-review.md` |
+
+**Step 2 — Technology conventions:** Detect the project's tech stack (check for `tsconfig.json`, dominant file extensions, `package.json` scripts, etc.) and read any additional technology convention files that apply. For example, if the project uses TypeScript, also read `typescript.md` — even if the action-specific file is `testing.md`.
 
 ---
 

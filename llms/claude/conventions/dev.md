@@ -11,3 +11,18 @@
 - NEVER implement a mock mode for testing or for any purpose. We always use real data and real APIs, never mock implementations.
 - When you are trying to fix a bug or compilation error or any other issue, YOU MUST NEVER throw away the old implementation and rewrite without explicit permission from the user. If you are going to do this, YOU MUST STOP and get explicit permission from the user.
 - NEVER name things as 'improved' or 'new' or 'enhanced', etc. Code naming should be evergreen. What is new today will be "old" someday.
+
+## We practice TDD. That means:
+
+- Write tests before writing the implementation code
+- Only write enough code to make the failing test pass
+- Refactor code continuously while ensuring tests still pass
+
+### TDD Implementation Process
+
+- Write a failing test that defines a desired function or improvement
+- Run the test to confirm it fails as expected
+- Write minimal code to make the test pass
+- Run the test to confirm success
+- Refactor code to improve design while keeping tests green
+- Repeat the cycle for each new feature or bugfix

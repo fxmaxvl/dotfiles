@@ -24,18 +24,3 @@ Unit tests MUST be fully isolated from external systems. This means:
 If your unit test makes a real network call, it is an **integration test**, not a unit test. Name it and place it accordingly.
 
 Use dependency injection, mocks, or stubs to control all I/O at the boundary. The test must pass offline and deterministically every time.
-
-## We practice TDD. That means:
-
-- Write tests before writing the implementation code
-- Only write enough code to make the failing test pass
-- Refactor code continuously while ensuring tests still pass
-
-### TDD Implementation Process
-
-- Write a failing test that defines a desired function or improvement
-- Run the test to confirm it fails as expected
-- Write minimal code to make the test pass
-- Run the test to confirm success
-- Refactor code to improve design while keeping tests green
-- Repeat the cycle for each new feature or bugfix
