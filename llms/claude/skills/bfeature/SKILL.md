@@ -326,10 +326,21 @@ The agent should:
 
 ## State Updates
 
-After every phase transition, update `.claude/.bfeature-temp/build-state.json`:
-- Set the new `phase` and `phase_status`
-- Update `updated_at` to the current ISO timestamp
-- Write the file to disk
+After every phase transition, use the helper script instead of reading/writing JSON manually:
+
+```
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase=<phase> phase_status=<status>
+```
+
+The script auto-sets `updated_at`. Use dot notation for nested fields:
+
+```
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh artifacts.plan=20260409T14-dark-mode-plan.md
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh collect_todos=true
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase=execute phase_status=awaiting_approval
+```
+
+Multiple key=value pairs can be passed in a single call. Boolean values (`true`/`false`) and `null` are written as JSON primitives automatically.
 
 ## Error Recovery
 

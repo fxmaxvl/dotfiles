@@ -21,7 +21,15 @@ When a step requires a temporary solution, workaround, or deferred work (e.g., w
 
 The `(<slug>)` tag ties the comment to the feature so it can be collected automatically during the collect-todos phase. Every deferred item must have a comment in the code — no silent shortcuts.
 
-Read `.claude/.bfeature-temp/build-state.json` to find the `slug`, `build_timestamp`, and `mode`. Store the plan in `.claude/.bfeature-temp/<build_timestamp>-<build_timestamp>-<slug>-plan.md`. Also create `.claude/.bfeature-temp/<build_timestamp>-<slug>-todo.md` to keep state.
+Run the helper scripts to load state and detect the stack. Use Glob to find them: `~/.claude/skills/bfeature/scripts/`.
+
+```
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh
+bash ~/.claude/skills/bfeature/scripts/detect-stack.sh
+```
+
+`state-ops.sh` gives you `slug`, `build_timestamp`, `mode`, and all artifact paths including `paths.plan` and `paths.todo` where you'll write output.
+`detect-stack.sh` gives you `type`, `test_commands`, `lint_command`, `lint_fix_command`, `monorepo`, `workspaces`, and `scope_template` — use these directly for the Quality Gates section below; no need to re-detect.
 
 ## Mode-aware input
 
@@ -30,16 +38,12 @@ Read `.claude/.bfeature-temp/build-state.json` to find the `slug`, `build_timest
 
 ## Quality gates — detect and document
 
-Before writing the plan, scan the project to determine how quality gates will be run. This ensures the executor knows what "done" looks like.
+Use the `detect-stack.sh` output from above. Additionally:
 
-1. **Detect project type** by checking for: `package.json`, `go.mod`, `Cargo.toml`, `pom.xml`/`build.gradle`, `pyproject.toml`/`setup.py`
-2. **Consult conventions first** (before general knowledge):
-   - TypeScript/JavaScript project → read `conventions/typescript.md` for lint and test guidance
-   - All projects → read `conventions/testing.md` for test requirements
-3. **Detect monorepo** — check for `workspaces` in `package.json`, `pnpm-workspace.yaml`, `lerna.json`, `go.work`, or nested `package.json` files
-4. **Determine commands** — based on detected type and conventions, identify:
-   - Test command (monorepo-scoped if applicable)
-   - Lint command + auto-fix variant if available
+- **TypeScript/JavaScript project** → read `conventions/typescript.md` for any project-specific overrides to lint and test commands
+- **All projects** → read `conventions/testing.md` for test requirements
+
+Apply `scope_template` with the affected package if `monorepo` is true.
 
 Include a **"Quality Gates"** section in `<build_timestamp>-<slug>-plan.md` that documents these commands so the verify phase has a starting point. Example:
 

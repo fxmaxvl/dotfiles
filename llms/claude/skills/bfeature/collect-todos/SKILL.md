@@ -10,16 +10,25 @@ Scan the feature branch changes for `TODO` comments **that are related to this f
 
 ## Input
 
-Read `.claude/.bfeature-temp/build-state.json` to find the `slug`, `build_timestamp`, and `mode`. Read the appropriate feature context to filter relevant vs. unrelated TODOs:
+Run the helper scripts. Use Glob to find them: `~/.claude/skills/bfeature/scripts/`.
 
-- **Full mode** (`mode` = `"full"`): Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` for feature context.
-- **Quick mode** (`mode` = `"quick"`): No spec exists. Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` for feature context.
+```
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh
+bash ~/.claude/skills/bfeature/scripts/changed-packages.sh
+```
+
+`state-ops.sh` gives you `slug`, `build_timestamp`, `mode`, and artifact paths.
+`changed-packages.sh` gives you `changed_files` — use this list to scope TODO detection.
+
+Read the appropriate feature context for filtering relevant TODOs:
+- **Full mode** (`mode` = `"full"`): Read the path at `paths.spec` from `state-ops.sh` output.
+- **Quick mode** (`mode` = `"quick"`): Read the path at `paths.qa` from `state-ops.sh` output.
 
 ## Steps
 
 ### 1. Find TODOs introduced by this branch
 
-Use `git diff master...HEAD` to get the actual diff. Only consider lines that were **added or modified** by this branch (lines starting with `+` in the diff). This ensures pre-existing TODOs in touched files are excluded.
+Use `git diff master...HEAD` to get the actual diff. Only consider lines that were **added or modified** by this branch (lines starting with `+` in the diff). Cross-reference against `changed_files` from `changed-packages.sh` to confirm scope. This ensures pre-existing TODOs in touched files are excluded.
 
 Search the added/modified lines for `TODO` comments (case-insensitive).
 
@@ -59,5 +68,5 @@ Key rules:
 
 ## Output
 
-- Backlog document: `.claude/.bfeature-temp/<build_timestamp>-<slug>-backlog.md`
+- Backlog document: write to the path at `paths.backlog` from `state-ops.sh` output.
 - Update `.claude/.bfeature-temp/build-state.json`: set `artifacts.backlog` to `"<build_timestamp>-<slug>-backlog.md"`
