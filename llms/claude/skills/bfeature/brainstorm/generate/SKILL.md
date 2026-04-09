@@ -10,8 +10,8 @@ Generate a complete, implementation-ready feature specification from the gathere
 
 ## Input
 
-1. Read `.claude/.bfeature-temp/build-state.json` to get the slug and context
-2. Read `.claude/.bfeature-temp/<slug>-qa.md` for the Q&A gathered interactively
+1. Read `.claude/.bfeature-temp/build-state.json` to get the `slug`, `build_timestamp`, and context
+2. Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` for the Q&A gathered interactively
 
 ## Step 0 — Explore all layers named in the Q&A
 
@@ -25,7 +25,7 @@ This step exists to prevent the spec from omitting layers that were identified i
 
 ## Output
 
-Write a thorough spec to `.claude/.bfeature-temp/<slug>-spec.md`. Include:
+Write a thorough spec to `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md`. Include:
 
 - **Overview** — what this feature does and why
 - **Goals** — what success looks like

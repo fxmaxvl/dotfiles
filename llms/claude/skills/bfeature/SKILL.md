@@ -105,12 +105,13 @@ Print banner: `── bfeature | Init ──────────────
      - If the user chooses to continue: stay on the current branch, use the current branch name to derive the slug (strip `feat/` prefix if present)
      - If the user chooses a new branch: create and checkout `feat/<slug>` from master
 
-6. Create `.claude/.bfeature-temp/build-state.json`:
+6. Create `.claude/.bfeature-temp/build-state.json` — before writing, capture the current timestamp as `build_timestamp` in `YYYYMMDDTHH` format (e.g., `20260409T14`). This prefix is used for all artifact filenames throughout the build:
 
 ```json
 {
   "idea": "$ARGUMENTS",
   "slug": "<slug>",
+  "build_timestamp": "<YYYYMMDDTHH>",
   "mode": "full",
   "phase": "brainstorm",
   "phase_status": "in_progress",
@@ -140,7 +141,7 @@ Print banner: `── bfeature | Init ──────────────
 
 7. Proceed to Phase 1 (brainstorm for full mode, refine for quick mode).
 
-**Artifact naming convention:** All artifact filenames are prefixed with the slug. For example, if the slug is `dark-mode`, the artifacts are `dark-mode-spec.md`, `dark-mode-plan.md`, and `dark-mode-todo.md`. All artifacts live in `.claude/.bfeature-temp/`. For example, if slug is `dark-mode`, the spec lives at `.claude/.bfeature-temp/dark-mode-spec.md`.
+**Artifact naming convention:** All artifact filenames use the format `<build_timestamp>-<slug>-<artifact>.md`. For example, if the slug is `dark-mode` and the timestamp is `20260409T14`, the artifacts are `20260409T14-dark-mode-spec.md`, `20260409T14-dark-mode-plan.md`, and `20260409T14-dark-mode-todo.md`. All artifacts live in `.claude/.bfeature-temp/`. The timestamp is captured once at init, stored in state as `build_timestamp`, and reused for all artifact names.
 
 ## Phase 1 — Brainstorm (full mode only)
 
@@ -161,13 +162,13 @@ If state has `phase` = `"brainstorm"` and `phase_status` = `"waiting_answer"`:
 2. Synthesize an overall description from the ticket content
 3. Read `bfeature/brainstorm/SKILL.md` and follow its instructions **inline** (in the current conversation) with the synthesized description
    - Runs in the main conversation — user interaction is fully available
-   - Gather saves Q&A to `.claude/.bfeature-temp/<slug>-qa.md`
+   - Gather saves Q&A to `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md`
 4. Read `bfeature/brainstorm/generate/SKILL.md` and pass its contents as an Agent prompt (model: opus) to produce the spec from the Q&A
 
 ### If `jira.enabled` is `false`:
 1. Read `bfeature/brainstorm/SKILL.md` and follow its instructions **inline** (in the current conversation) with the idea from state
    - Runs in the main conversation — user interaction is fully available
-   - Gather saves Q&A to `.claude/.bfeature-temp/<slug>-qa.md`
+   - Gather saves Q&A to `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md`
 2. Read `bfeature/brainstorm/generate/SKILL.md` and pass its contents as an Agent prompt (model: opus) to produce the spec from the Q&A
 
 ### Escalating questions to Jira
@@ -178,9 +179,9 @@ If during brainstorm the user cannot answer a clarifying question and asks to po
 4. Tell the user: "Questions posted to Jira ticket. Run `/bfeature` again later to check for answers."
 
 ### In all cases:
-When `.claude/.bfeature-temp/<slug>-spec.md` is detected:
-   - Update state: set `artifacts.spec` to `"<slug>-spec.md"`, `phase` to `"review-design"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Ask the user: "Spec written to `.claude/.bfeature-temp/<slug>-spec.md`. Ready to proceed to design review?"
+When `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` is detected:
+   - Update state: set `artifacts.spec` to `"<build_timestamp>-<slug>-spec.md"`, `phase` to `"review-design"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
+   - Ask the user: "Spec written to `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md`. Ready to proceed to design review?"
    - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 2
    - If no: **Exit** (re-invoke `/bfeature` when ready)
 
@@ -192,8 +193,8 @@ Skipped entirely in full mode — full mode uses Phase 1 (Brainstorm) instead.
 
 1. Read `bfeature/refine/SKILL.md` and follow its instructions **inline** (in the current conversation) with the idea from state
    - Runs in the main conversation — user interaction is fully available
-   - Saves Q&A to `.claude/.bfeature-temp/<slug>-qa.md`
-2. When `.claude/.bfeature-temp/<slug>-qa.md` is detected:
+   - Saves Q&A to `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md`
+2. When `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` is detected:
    - Update state: set `phase` to `"plan"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
    - Ask the user: "Q&A saved. Ready to proceed to planning?"
    - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 3
@@ -208,7 +209,7 @@ Skipped entirely in quick mode.
 Run up to 3 analyze → fix cycles:
 
 1. Read `bfeature/review-design/SKILL.md` and pass its contents as an Agent prompt (model: opus)
-2. Read `.claude/.bfeature-temp/<slug>-design-report.md`
+2. Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-design-report.md`
 3. If `STATUS: PASS`: proceed to step 5
 4. If `STATUS: CONCERN`:
    - Show the concerns to the user
@@ -225,10 +226,10 @@ Run up to 3 analyze → fix cycles:
 
 Print banner: `── bfeature | Plan ───────────────────────────────`
 
-1. Read `bfeature/plan/SKILL.md` and pass its contents as an Agent prompt (model: opus) — it reads the appropriate source based on `mode` and produces `.claude/.bfeature-temp/<slug>-plan.md` + `.claude/.bfeature-temp/<slug>-todo.md`
+1. Read `bfeature/plan/SKILL.md` and pass its contents as an Agent prompt (model: opus) — it reads the appropriate source based on `mode` and produces `.claude/.bfeature-temp/<build_timestamp>-<slug>-plan.md` + `.claude/.bfeature-temp/<build_timestamp>-<slug>-todo.md`
 2. When both files are detected:
-   - Update state: set `artifacts.plan` to `"<slug>-plan.md"`, `artifacts.todo` to `"<slug>-todo.md"`, `phase` to `"execute"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Ask the user: "Plan written to `.claude/.bfeature-temp/<slug>-plan.md`. Ready to start execution?"
+   - Update state: set `artifacts.plan` to `"<build_timestamp>-<slug>-plan.md"`, `artifacts.todo` to `"<build_timestamp>-<slug>-todo.md"`, `phase` to `"execute"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
+   - Ask the user: "Plan written to `.claude/.bfeature-temp/<build_timestamp>-<slug>-plan.md`. Ready to start execution?"
    - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 4
    - If no: **Exit** (re-invoke `/bfeature` when ready)
 
@@ -264,7 +265,7 @@ Print banner: `── bfeature | Review Implementation ────────�
 Run up to 3 analyze → fix cycles:
 
 1. Read `bfeature/review-impl/SKILL.md` and pass its contents as an Agent prompt (model: opus)
-2. Read `.claude/.bfeature-temp/<slug>-impl-report.md`
+2. Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-impl-report.md`
 3. If `STATUS: PASS`: proceed to step 5
 4. If `STATUS: CONCERN`:
    - Show the concerns to the user
@@ -291,7 +292,7 @@ Print banner: `── bfeature | Finalize ────────────�
    - If `jira.enabled`, include the ticket key (e.g., `feat(PROJ-123): address review concerns`)
 3. Push the branch to remote
 5. Create a PR using `gh pr create`:
-   - **PR body:** Read `.claude/.bfeature-temp/<slug>-spec.md` and write a short summary (2–3 sentences max) of what the feature does and why — no test descriptions, no minor change lists, no implementation details
+   - **PR body:** Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` and write a short summary (2–3 sentences max) of what the feature does and why — no test descriptions, no minor change lists, no implementation details
    - **If `github_issue.enabled` is `true`:** append `Closes #<github_issue.number>` to the PR body. This automatically closes the issue when the PR is merged.
    - **If `jira.enabled` is `true`:** append a link to the Jira ticket (`jira.ticket_url`) in the PR body
 6. **If `jira.enabled` is `true`:**
@@ -308,9 +309,9 @@ Print banner: `── bfeature | Finalize ────────────�
 Print banner: `── bfeature | Collect TODOs ───────────────────────────────`
 
 1. Read `bfeature/collect-todos/SKILL.md` and pass its contents as an Agent prompt (model: sonnet)
-2. The skill scans changes introduced by the feature branch for TODO comments, classifies them, and generates `.claude/.bfeature-temp/<slug>-backlog.md`
+2. The skill scans changes introduced by the feature branch for TODO comments, classifies them, and generates `.claude/.bfeature-temp/<build_timestamp>-<slug>-backlog.md`
 3. When complete:
-   - Update state: set `artifacts.backlog` to `"<slug>-backlog.md"` (or `null` if no items found)
+   - Update state: set `artifacts.backlog` to `"<build_timestamp>-<slug>-backlog.md"` (or `null` if no items found)
 4. Proceed to Phase 8 (Cleanup)
 
 ## Phase 8 — Cleanup
@@ -321,7 +322,7 @@ Run as a **background Agent** (`run_in_background: true`, model: sonnet) — fir
 
 The agent should:
 1. Delete `.claude/.bfeature-temp/build-state.json`
-2. Delete these ephemeral handoff files if they exist: `<slug>-qa.md`, `<slug>-design-report.md`, `<slug>-impl-report.md`
+2. Delete these ephemeral handoff files if they exist: `<build_timestamp>-<slug>-qa.md`, `<build_timestamp>-<slug>-design-report.md`, `<build_timestamp>-<slug>-impl-report.md`
 
 ## State Updates
 

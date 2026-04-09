@@ -10,10 +10,10 @@ Scan the feature branch changes for `TODO` comments **that are related to this f
 
 ## Input
 
-Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `mode`. Read the appropriate feature context to filter relevant vs. unrelated TODOs:
+Read `.claude/.bfeature-temp/build-state.json` to find the `slug`, `build_timestamp`, and `mode`. Read the appropriate feature context to filter relevant vs. unrelated TODOs:
 
-- **Full mode** (`mode` = `"full"`): Read `.claude/.bfeature-temp/<slug>-spec.md` for feature context.
-- **Quick mode** (`mode` = `"quick"`): No spec exists. Read `.claude/.bfeature-temp/<slug>-qa.md` for feature context.
+- **Full mode** (`mode` = `"full"`): Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` for feature context.
+- **Quick mode** (`mode` = `"quick"`): No spec exists. Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` for feature context.
 
 ## Steps
 
@@ -45,7 +45,7 @@ For each found comment, classify the reason:
 
 ### 4. Generate backlog document
 
-Write to `.claude/.bfeature-temp/<slug>-backlog.md`. The file contains **only** a markdown table — no title, no header, no prose. See `example-dark-mode-backlog.md` in this skill's directory for the exact format.
+Write to `.claude/.bfeature-temp/<build_timestamp>-<slug>-backlog.md`. The file contains **only** a markdown table — no title, no header, no prose. See `example-dark-mode-backlog.md` in this skill's directory for the exact format.
 
 Key rules:
 - The `Feature` column contains the slug. Prefix with `[?]` when relevance to the feature is unclear.
@@ -59,5 +59,5 @@ Key rules:
 
 ## Output
 
-- Backlog document: `.claude/.bfeature-temp/<slug>-backlog.md`
-- Update `.claude/.bfeature-temp/build-state.json`: set `artifacts.backlog` to `"<slug>-backlog.md"`
+- Backlog document: `.claude/.bfeature-temp/<build_timestamp>-<slug>-backlog.md`
+- Update `.claude/.bfeature-temp/build-state.json`: set `artifacts.backlog` to `"<build_timestamp>-<slug>-backlog.md"`

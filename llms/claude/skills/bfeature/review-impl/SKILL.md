@@ -6,12 +6,12 @@ allowed-tools: Read, Grep, Glob, Bash(git *)
 model: opus
 ---
 
-Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `mode`. Review the implementation by comparing what was built against the plan and requirements. Use git diff from the feature branch to see all changes.
+Read `.claude/.bfeature-temp/build-state.json` to find the `slug`, `build_timestamp`, and `mode`. Review the implementation by comparing what was built against the plan and requirements. Use git diff from the feature branch to see all changes.
 
 ## Mode-aware input
 
-- **Full mode** (`mode` = `"full"`): Compare against `.claude/.bfeature-temp/<slug>-spec.md` and `.claude/.bfeature-temp/<slug>-plan.md`.
-- **Quick mode** (`mode` = `"quick"`): No spec exists. Compare against `.claude/.bfeature-temp/<slug>-qa.md` and `.claude/.bfeature-temp/<slug>-plan.md`.
+- **Full mode** (`mode` = `"full"`): Compare against `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` and `.claude/.bfeature-temp/<build_timestamp>-<slug>-plan.md`.
+- **Quick mode** (`mode` = `"quick"`): No spec exists. Compare against `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` and `.claude/.bfeature-temp/<build_timestamp>-<slug>-plan.md`.
 
 ## Review Criteria
 
@@ -44,7 +44,7 @@ Do **not** run the test suite — `verify` already ran it before this phase. If 
 
 ## Output
 
-Save a report to `.claude/.bfeature-temp/<slug>-impl-report.md`.
+Save a report to `.claude/.bfeature-temp/<build_timestamp>-<slug>-impl-report.md`.
 
 If all criteria pass:
 

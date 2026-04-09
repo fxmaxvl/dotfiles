@@ -27,7 +27,7 @@ Aim for 2-5 questions. Fewer is better if the idea is straightforward. Do **not*
 
 ## Output
 
-Once you have enough information, save a Q&A summary to `.claude/.bfeature-temp/<slug>-qa.md` (read `.claude/.bfeature-temp/build-state.json` for the slug). Format:
+Once you have enough information, save a Q&A summary to `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` (read `.claude/.bfeature-temp/build-state.json` for the `slug` and `build_timestamp`). Format:
 
 ```markdown
 # Refine Q&A

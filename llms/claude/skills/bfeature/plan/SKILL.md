@@ -21,12 +21,12 @@ When a step requires a temporary solution, workaround, or deferred work (e.g., w
 
 The `(<slug>)` tag ties the comment to the feature so it can be collected automatically during the collect-todos phase. Every deferred item must have a comment in the code — no silent shortcuts.
 
-Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `mode`. Store the plan in `.claude/.bfeature-temp/<slug>-plan.md`. Also create `.claude/.bfeature-temp/<slug>-todo.md` to keep state.
+Read `.claude/.bfeature-temp/build-state.json` to find the `slug`, `build_timestamp`, and `mode`. Store the plan in `.claude/.bfeature-temp/<build_timestamp>-<build_timestamp>-<slug>-plan.md`. Also create `.claude/.bfeature-temp/<build_timestamp>-<slug>-todo.md` to keep state.
 
 ## Mode-aware input
 
-- **Full mode** (`mode` = `"full"`): Read the spec from `.claude/.bfeature-temp/<slug>-spec.md` — this is the primary input for planning.
-- **Quick mode** (`mode` = `"quick"`): No spec exists. Read `.claude/.bfeature-temp/<slug>-qa.md` directly — the Q&A is the primary input. Produce a lighter plan (3-8 todo items) since quick mode targets smaller, well-scoped changes.
+- **Full mode** (`mode` = `"full"`): Read the spec from `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` — this is the primary input for planning.
+- **Quick mode** (`mode` = `"quick"`): No spec exists. Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` directly — the Q&A is the primary input. Produce a lighter plan (3-8 todo items) since quick mode targets smaller, well-scoped changes.
 
 ## Quality gates — detect and document
 
@@ -41,7 +41,7 @@ Before writing the plan, scan the project to determine how quality gates will be
    - Test command (monorepo-scoped if applicable)
    - Lint command + auto-fix variant if available
 
-Include a **"Quality Gates"** section in `<slug>-plan.md` that documents these commands so the verify phase has a starting point. Example:
+Include a **"Quality Gates"** section in `<build_timestamp>-<slug>-plan.md` that documents these commands so the verify phase has a starting point. Example:
 
 ```markdown
 ## Quality Gates
@@ -52,7 +52,7 @@ Include a **"Quality Gates"** section in `<slug>-plan.md` that documents these c
 
 ## Deployment notes — multi-package monorepos
 
-If a monorepo is detected **and** the feature touches more than one package, generate `.claude/.bfeature-temp/<slug>-deployment.md` covering:
+If a monorepo is detected **and** the feature touches more than one package, generate `.claude/.bfeature-temp/<build_timestamp>-<slug>-deployment.md` covering:
 
 - **Affected packages** — list each package with a one-line description of what changes
 - **Deploy order** — if packages depend on each other (e.g., proto/API package must deploy before consumers), document the required sequence
