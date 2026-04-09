@@ -258,7 +258,7 @@ Print banner: `── bfeature | Review Implementation ────────�
 Run up to 3 analyze → fix cycles:
 
 1. Read `bfeature/review-impl/SKILL.md` and pass its contents as an Agent prompt (model: opus)
-2. Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-impl-report.md`
+2. Read `paths.impl_report`
 3. If `STATUS: PASS`: proceed to step 5
 4. If `STATUS: CONCERN`:
    - Show the concerns to the user
@@ -294,7 +294,7 @@ Print banner: `── bfeature | Finalize ────────────�
    - If `jira.enabled`, include the ticket key (e.g., `feat(PROJ-123): address review concerns`)
 4. Push the branch to remote
 5. Create a PR using `gh pr create`:
-   - **PR body:** Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` and write a short summary (2–3 sentences max) of what the feature does and why — no test descriptions, no minor change lists, no implementation details
+   - **PR body:** Read `paths.spec` and write a short summary (2–3 sentences max) of what the feature does and why — no test descriptions, no minor change lists, no implementation details
    - **If `github_issue.enabled` is `true`:** append `Closes #<github_issue.number>` to the PR body. This automatically closes the issue when the PR is merged.
    - **If `jira.enabled` is `true`:** append a link to the Jira ticket (`jira.ticket_url`) in the PR body
 6. **If `jira.enabled` is `true`:**
