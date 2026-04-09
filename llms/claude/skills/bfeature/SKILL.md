@@ -112,15 +112,15 @@ Print banner: `── bfeature | Init ──────────────
      - If the user chooses to continue: stay on the current branch, use the current branch name to derive the slug (strip `feat/` prefix if present)
      - If the user chooses a new branch: create and checkout `feat/<slug>` from master
 
-5. Initialize state by running `init-state.sh`. Build the argument list from what was detected above:
+5. Initialize state. Build the argument list from what was detected above:
 
 ```
-bash ~/.claude/skills/bfeature/scripts/init-state.sh \
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh --init \
   --slug "<slug>" \
   --idea "<idea>" \
-  [--mode quick]            # only if --quick flag was detected \
+  [--mode quick]                           # only if --quick flag was detected \
   [--jira-key PROJ-123 --jira-url <url>]   # only if Jira ticket detected \
-  [--gh-issue 42]           # only if GitHub issue detected
+  [--gh-issue 42]                          # only if GitHub issue detected
 ```
 
    The script creates `.claude/.bfeature-temp/build-state.json`, computes `build_timestamp` in `YYYYMMDDTHH` format, and outputs JSON with `slug`, `build_timestamp`, `mode`, `paths.*`, `jira`, and `github_issue` — use these values for the rest of the session instead of re-reading state.
