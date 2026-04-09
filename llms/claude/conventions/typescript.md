@@ -3,20 +3,28 @@
 ## Testing
 
 - Use `jest-mock-extended`'s `mock<T>()` to create mocks instead of manually duck-typing interface members as `jest.fn()`. It's less boilerplate and automatically stays in sync when the interface changes.
-- Follow the test context pattern from `testing.md`. In TypeScript: declare `let testCtx` typed via `ReturnType<typeof createTestCtx>`, define a factory function that constructs and returns all setup state, and call it in `beforeEach`. Naming is flexible as long as the pattern is clear. Example:
+- Follow the test context pattern from `testing.md`. In TypeScript: declare `let testCtx` typed via `ReturnType<typeof createTestCtx>`, define a factory function that constructs and returns all setup state, and call it in `beforeEach`. Naming is flexible as long as the pattern is clear. The factory function MUST be defined at the end of the file, after all `describe`/`it` blocks. Example:
 
 ```typescript
-function createTestCtx() {
-  const mockRepo = mock<UserRepo>();
-  const service = new UserService(mockRepo);
-  return { mockRepo, service };
-}
-
 let testCtx: ReturnType<typeof createTestCtx>;
 
 beforeEach(() => {
   testCtx = createTestCtx();
 });
+
+describe('UserService', () => {
+  it('does something', () => {
+    // use testCtx
+  });
+});
+
+// --- test helpers (end of file) ---
+
+function createTestCtx() {
+  const mockRepo = mock<UserRepo>();
+  const service = new UserService(mockRepo);
+  return { mockRepo, service };
+}
 ```
 
 ## Linting
