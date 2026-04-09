@@ -61,13 +61,18 @@ Print the banner as plain text (not in a code block). Do this before any other w
 
 **Full mode** (default):
 ```
-init → brainstorm → review-design ⇄ fix → plan → execute → verify → review-impl ⇄ fix → verify (silent) → finalize (commit/push/ticket) → collect-todos? → cleanup → done
+init → brainstorm → [auto] review-design ⇄ fix → [auto] plan → [GATE] execute → [auto] verify → [auto] review-impl ⇄ fix → [auto] verify (silent) → [GATE: ready + todos?] finalize (commit/push/ticket) → collect-todos? → cleanup → done
 ```
 
 **Quick mode** (invoked via `/bfeature --quick`):
 ```
-init → refine → plan (from Q&A) → execute → verify → review-impl ⇄ fix → verify (silent) → finalize (commit/push/ticket) → collect-todos? → cleanup → done
+init → refine → [auto] plan (from Q&A) → [GATE] execute → [auto] verify → [auto] review-impl ⇄ fix → [auto] verify (silent) → [GATE: ready + todos?] finalize (commit/push/ticket) → collect-todos? → cleanup → done
 ```
+
+**Gates legend:**
+- `[auto]` — proceeds without asking
+- `[GATE]` — stops and waits for user approval
+- `⇄ fix` — per-cycle "fix these concerns?" stop inside review loops
 
 Quick mode skips **only** brainstorm and review-design. Every other phase — refine, plan, execute, verify, review-impl, verify (silent), finalize — is **mandatory** regardless of how simple or obvious the fix appears. Do not collapse, merge, or skip phases because the task looks trivial. The phases exist as quality gates that apply at all complexity levels.
 
@@ -80,7 +85,9 @@ Quick mode skips **only** brainstorm and review-design. Every other phase — re
 3. Check if `<project_root>/.claude/.bfeature-temp/build-state.json` exists
 4. If it does not exist: start from Phase 0 (init)
 5. If it exists: read it and resume:
-   - If `phase_status` is `"awaiting_approval"`: ask the user "Paused before [current phase]. Ready to proceed?" — if yes, set `phase_status` to `"in_progress"`, update state, and execute the current phase; if no, exit
+   - If `phase_status` is `"awaiting_approval"`:
+     - If `phase` is `"finalize"`: re-ask the pre-finalization gate (both questions: ready to finalize? + collect TODOs?). If not ready: exit. If ready: set `phase_status` to `"in_progress"`, save `collect_todos` answer, update state, continue Phase 6 from step 3 (skip silent verify — it already passed).
+     - Otherwise: ask "Paused before [current phase]. Ready to proceed?" — if yes, set `phase_status` to `"in_progress"`, update state, execute the current phase; if no, exit
    - Otherwise: resume the current phase from where it left off
 
 ## Phase 0 — Init
@@ -126,6 +133,7 @@ Print banner: `── bfeature | Init ──────────────
     "ticket_url": null,
     "pending_questions": null
   },
+  "collect_todos": null,
   "artifacts": {
     "spec": null,
     "plan": null,
@@ -181,10 +189,8 @@ If during brainstorm the user cannot answer a clarifying question and asks to po
 
 ### In all cases:
 When `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` is detected:
-   - Update state: set `artifacts.spec` to `"<build_timestamp>-<slug>-spec.md"`, `phase` to `"review-design"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Ask the user: "Spec written to `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md`. Ready to proceed to design review?"
-   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 2
-   - If no: **Exit** (re-invoke `/bfeature` when ready)
+   - Update state: set `artifacts.spec` to `"<build_timestamp>-<slug>-spec.md"`, `phase` to `"review-design"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
+   - Proceed immediately to Phase 2 (no approval gate)
 
 ## Phase 1Q — Refine (quick mode only)
 
@@ -196,10 +202,8 @@ Skipped entirely in full mode — full mode uses Phase 1 (Brainstorm) instead.
    - Runs in the main conversation — user interaction is fully available
    - Saves Q&A to `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md`
 2. When `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` is detected:
-   - Update state: set `phase` to `"plan"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Ask the user: "Q&A saved. Ready to proceed to planning?"
-   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 3
-   - If no: **Exit** (re-invoke `/bfeature` when ready)
+   - Update state: set `phase` to `"plan"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
+   - Proceed immediately to Phase 3 (no approval gate)
 
 ## Phase 2 — Review Design (full mode only)
 
@@ -218,10 +222,8 @@ Run up to 3 analyze → fix cycles:
    - If yes: read `bfeature/review-design/fix/SKILL.md` and pass its contents as an Agent prompt (model: sonnet), then go back to step 1
    - If no (user accepts as-is): proceed to step 5
    - If this was already the 3rd cycle: tell the user "Max review cycles reached — please review the spec manually" and stop
-5. Update state: `phase` to `"plan"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-6. Ask the user: "Design review passed. Ready to proceed to planning?"
-7. If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 3
-8. If no: **Exit** (re-invoke `/bfeature` when ready)
+5. Update state: `phase` to `"plan"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
+6. Proceed immediately to Phase 3 (no approval gate)
 
 ## Phase 3 — Plan
 
@@ -240,10 +242,8 @@ Print banner: `── bfeature | Execute ─────────────
 
 1. Read `bfeature/do-todo/SKILL.md` and pass its contents as an Agent prompt (model: sonnet) — it loops internally until all items are checked
 2. When it completes:
-   - Update state: `phase` to `"verify"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Ask the user: "All tasks complete. Ready to run quality gates (tests + lint)?"
-   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 4.5
-   - If no: **Exit** (re-invoke `/bfeature` when ready)
+   - Update state: `phase` to `"verify"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
+   - Proceed immediately to Phase 4.5 (no approval gate)
 
 ## Phase 4.5 — Verify
 
@@ -254,10 +254,8 @@ Print banner: `── bfeature | Verify ─────────────�
    - Runs full test suite (monorepo-scoped if applicable) — fixes failures caused by our changes; surfaces unrelated failures to the user
    - Runs linter with auto-fix where available — fixes all remaining issues manually if needed
 2. When tests and lint are green:
-   - Update state: `phase` to `"review-impl"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Ask the user: "Quality gates passed. Ready to proceed to implementation review?"
-   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 5
-   - If no: **Exit** (re-invoke `/bfeature` when ready)
+   - Update state: `phase` to `"review-impl"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
+   - Proceed immediately to Phase 5 (no approval gate)
 
 ## Phase 5 — Review Implementation
 
@@ -274,10 +272,8 @@ Run up to 3 analyze → fix cycles:
    - If yes: read `bfeature/review-impl/fix/SKILL.md` and pass its contents as an Agent prompt (model: sonnet), then go back to step 1
    - If no (user accepts as-is): proceed to step 5
    - If this was already the 3rd cycle: tell the user "Max review cycles reached — please review the implementation manually" and stop
-5. Update state: `phase` to `"finalize"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-6. Ask the user: "Implementation review passed. Ready to finalize (commit, push, PR)?"
-7. If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 6
-8. If no: **Exit** (re-invoke `/bfeature` when ready)
+5. Update state: `phase` to `"finalize"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
+6. Proceed immediately to Phase 6 (no approval gate here — the combined gate is inside Phase 6)
 
 ## Phase 6 — Finalize
 
@@ -287,11 +283,16 @@ Print banner: `── bfeature | Finalize ────────────�
    - This catches any regressions introduced by review-impl fix cycles
    - If tests or lint fail: stop, tell the user which checks failed, and ask how to proceed — do **not** commit broken code
    - If all green: continue
-2. Check for uncommitted changes (verify and review-impl/fix cycles may have left changes unstaged). If any exist: stage them (do **not** `git add` anything in `.claude/.bfeature-temp/`) and commit following `conventions/git.md`:
+2. **Pre-finalization gate:** Update state: `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp. Ask the user two questions:
+   - "Ready to finalize (commit, push, PR)?"
+   - "Should I scan for TODO comments and collect them to the backlog after?"
+   - Wait for both answers before continuing. If not ready to finalize: **Exit** (re-invoke `/bfeature` when ready). Save the TODO answer in state as `collect_todos: true/false` so it survives session interruptions.
+   - If ready: set `phase_status` to `"in_progress"`, update state, continue.
+3. Check for uncommitted changes (verify and review-impl/fix cycles may have left changes unstaged). If any exist: stage them (do **not** `git add` anything in `.claude/.bfeature-temp/`) and commit following `conventions/git.md`:
    - Use `feat:` prefix with a concise description of the fixes/cleanup
    - If `github_issue.enabled`, include the issue number (e.g., `feat(#12): address review concerns`)
    - If `jira.enabled`, include the ticket key (e.g., `feat(PROJ-123): address review concerns`)
-3. Push the branch to remote
+4. Push the branch to remote
 5. Create a PR using `gh pr create`:
    - **PR body:** Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` and write a short summary (2–3 sentences max) of what the feature does and why — no test descriptions, no minor change lists, no implementation details
    - **If `github_issue.enabled` is `true`:** append `Closes #<github_issue.number>` to the PR body. This automatically closes the issue when the PR is merged.
@@ -300,10 +301,8 @@ Print banner: `── bfeature | Finalize ────────────�
    - Invoke the `jira-issue` skill: `transition-to(jira.ticket_key, "To Review")`
    - Invoke the `jira-issue` skill: `add-comment(jira.ticket_key, "PR: <pr_url>")`
 7. Tell the user: "PR is up at <pr_url>. Build complete!"
-8. Update state: `phase` to `"collect-todos"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-9. Ask the user: "Want me to scan the feature changes for TODO comments and add them to the backlog?"
-   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 7
-   - If no: skip Phase 7, proceed directly to Phase 8 (Cleanup)
+8. Update state: `phase` to `"collect-todos"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
+9. If `collect_todos` is `true` (set at the pre-finalization gate): proceed to Phase 7. Otherwise: skip Phase 7, proceed directly to Phase 8 (Cleanup)
 
 ## Phase 7 — Collect TODOs (optional)
 
