@@ -324,11 +324,11 @@ Print banner: `── bfeature | Collect TODOs ───────────
 
 Print banner: `── bfeature | Cleanup ───────────────────────────────`
 
-Run as a **background Agent** (`run_in_background: true`, model: sonnet) — fire and forget, do not wait for completion.
+```
+bash ~/.claude/skills/bfeature/scripts/cleanup.sh
+```
 
-The agent should:
-1. Delete `.claude/.bfeature-temp/build-state.json`
-2. Delete these ephemeral handoff files if they exist: `<build_timestamp>-<slug>-qa.md`, `<build_timestamp>-<slug>-design-report.md`, `<build_timestamp>-<slug>-impl-report.md`
+Deletes ephemeral handoff files (`qa.md`, `design-report.md`, `impl-report.md`) and `build-state.json`. Persistent artifacts (`spec`, `plan`, `todo`, `backlog`, `deployment`) are kept.
 
 ## State Updates
 
