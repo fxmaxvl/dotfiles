@@ -10,7 +10,7 @@ Orchestrate the full development workflow for a feature. Manage state via `.clau
 
 ## Artifacts Directory
 
-All build artifacts (spec, plan, todo, backlog, build-state.json) live in `<project_root>/.claude/.bfeature-temp/`. This is the project's `.claude/` directory (NOT `~/.claude/`). The directory is created via `mkdir -p` during init and the state file is removed at the end of finalization.
+All build artifacts (spec, plan, todo, backlog, build-state.json) live in `<project_root>/.claude/.bfeature-temp/`. `project_root` is always the **git repository root** — resolved via `git rev-parse --show-toplevel` (NOT the current working directory, NOT a package subdirectory, NOT `~/.claude/`). The directory is created via `mkdir -p` during init and the state file is removed at the end of finalization.
 
 ## Sub-skill Resolution
 
@@ -76,9 +76,10 @@ Quick mode skips **only** brainstorm and review-design. Every other phase — re
 1. **Detect `--quick` flag:** Check if `$ARGUMENTS` starts with or contains `--quick`. If it does:
    - Set `quick_mode` to `true`
    - Strip `--quick` from `$ARGUMENTS` before using the remainder as the idea
-2. Check if `.claude/.bfeature-temp/build-state.json` exists
-3. If it does not exist: start from Phase 0 (init)
-4. If it exists: read it and resume:
+2. **Resolve `project_root`:** Run `git rev-parse --show-toplevel`. Store the result as `project_root`. All artifact paths below use this value.
+3. Check if `<project_root>/.claude/.bfeature-temp/build-state.json` exists
+4. If it does not exist: start from Phase 0 (init)
+5. If it exists: read it and resume:
    - If `phase_status` is `"awaiting_approval"`: ask the user "Paused before [current phase]. Ready to proceed?" — if yes, set `phase_status` to `"in_progress"`, update state, and execute the current phase; if no, exit
    - Otherwise: resume the current phase from where it left off
 
@@ -97,7 +98,7 @@ Print banner: `── bfeature | Init ──────────────
    - Use the ticket key as slug prefix: `<ticket-key>-<short-description>` (e.g., `PROJ-123-dark-mode`)
    - Invoke the `jira-issue` skill: `transition-to(ticket_key, "In Progress")`
 3. If neither GitHub issue nor Jira ticket: derive a short kebab-case slug from the idea as before (e.g., "add dark mode" → "dark-mode")
-4. Create the artifacts directory: `mkdir -p <project_root>/.claude/.bfeature-temp/`
+4. Create the artifacts directory: `mkdir -p <project_root>/.claude/.bfeature-temp/` (using the `project_root` resolved at invocation via `git rev-parse --show-toplevel`)
 5. **Branch selection:**
    - Check the current git branch
    - If on `master` (or the repo's main branch): create and checkout `feat/<slug>` from master
