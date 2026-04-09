@@ -9,13 +9,23 @@ Ask the user one question at a time to gather requirements for their idea.
 Each question should build on the previous response, gradually filling in gaps.
 Do **not** skip steps or ask multiple questions at once.
 
+## Input
+
+Run the helper script to load state:
+
+```
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh
+```
+
+This gives you `slug`, `build_timestamp`, `paths.qa`, `jira` (with `enabled`, `ticket_key`), and `github_issue` (with `enabled`, `number`).
+
 ## Jira-sourced ideas
 
-If the idea was sourced from a Jira ticket (check `.claude/.bfeature-temp/build-state.json` for `jira.enabled === true`), you will receive a pre-synthesized description built from the ticket's description and comments. This gives you a richer starting point — you may need fewer clarifying questions, but still ask if anything is ambiguous or underspecified.
+If `jira.enabled` is `true`, you will receive a pre-synthesized description built from the ticket's description and comments. This gives you a richer starting point — you may need fewer clarifying questions, but still ask if anything is ambiguous or underspecified.
 
 ## GitHub-sourced ideas
 
-If the idea was sourced from a GitHub issue (check `.claude/.bfeature-temp/build-state.json` for `github_issue.enabled === true`), you will receive the issue title and body as the description. This gives you a richer starting point — you may need fewer clarifying questions, but still ask if anything is ambiguous or underspecified.
+If `github_issue.enabled` is `true`, you will receive the issue title and body as the description. This gives you a richer starting point — you may need fewer clarifying questions, but still ask if anything is ambiguous or underspecified.
 
 ## Knowing when to stop
 
@@ -30,7 +40,7 @@ If the user says they don't know the answer and asks to post the question to Jir
 
 ## Output
 
-Once you have enough information, save a Q&A summary to `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` (read `.claude/.bfeature-temp/build-state.json` for the `slug` and `build_timestamp`). Format:
+Once you have enough information, save a Q&A summary to the path at `paths.qa` (from `state-ops.sh`). Format:
 
 ```markdown
 # Brainstorm Q&A

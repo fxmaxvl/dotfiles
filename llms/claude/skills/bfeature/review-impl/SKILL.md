@@ -6,12 +6,22 @@ allowed-tools: Read, Grep, Glob, Bash(git *)
 model: opus
 ---
 
-Read `.claude/.bfeature-temp/build-state.json` to find the `slug`, `build_timestamp`, and `mode`. Review the implementation by comparing what was built against the plan and requirements. Use git diff from the feature branch to see all changes.
+Run the helper scripts to load state and detect changed files:
+
+```
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh
+bash ~/.claude/skills/bfeature/scripts/changed-packages.sh
+```
+
+`state-ops.sh` gives you `slug`, `build_timestamp`, `mode`, and `paths.*`.
+`changed-packages.sh` gives you `changed_files` — use this to scope the review to what this feature actually changed.
+
+Review the implementation by comparing what was built against the plan and requirements.
 
 ## Mode-aware input
 
-- **Full mode** (`mode` = `"full"`): Compare against `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` and `.claude/.bfeature-temp/<build_timestamp>-<slug>-plan.md`.
-- **Quick mode** (`mode` = `"quick"`): No spec exists. Compare against `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` and `.claude/.bfeature-temp/<build_timestamp>-<slug>-plan.md`.
+- **Full mode** (`mode` = `"full"`): Compare against `paths.spec` and `paths.plan`.
+- **Quick mode** (`mode` = `"quick"`): No spec exists. Compare against `paths.qa` and `paths.plan`.
 
 ## Review Criteria
 
@@ -44,7 +54,7 @@ Do **not** run the test suite — `verify` already ran it before this phase. If 
 
 ## Output
 
-Save a report to `.claude/.bfeature-temp/<build_timestamp>-<slug>-impl-report.md`.
+Save a report to the path at `paths.impl_report`.
 
 If all criteria pass:
 

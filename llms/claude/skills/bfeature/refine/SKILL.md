@@ -27,7 +27,13 @@ Aim for 2-5 questions. Fewer is better if the idea is straightforward. Do **not*
 
 ## Output
 
-Once you have enough information, save a Q&A summary to `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` (read `.claude/.bfeature-temp/build-state.json` for the `slug` and `build_timestamp`). Format:
+Once you have enough information, run the helper script to get state and artifact paths:
+
+```
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh
+```
+
+Save a Q&A summary to the path at `paths.qa`. Format:
 
 ```markdown
 # Refine Q&A

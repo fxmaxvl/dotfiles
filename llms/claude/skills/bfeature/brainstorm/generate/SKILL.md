@@ -10,8 +10,15 @@ Generate a complete, implementation-ready feature specification from the gathere
 
 ## Input
 
-1. Read `.claude/.bfeature-temp/build-state.json` to get the `slug`, `build_timestamp`, and context
-2. Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` for the Q&A gathered interactively
+Run the helper script to load state and artifact paths:
+
+```
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh
+```
+
+This gives you `slug`, `build_timestamp`, `mode`, and `paths.*`.
+
+Read the file at `paths.qa` for the Q&A gathered interactively.
 
 ## Step 0 — Explore all layers named in the Q&A
 
@@ -25,7 +32,7 @@ This step exists to prevent the spec from omitting layers that were identified i
 
 ## Output
 
-Write a thorough spec to `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md`. Include:
+Write a thorough spec to the path at `paths.spec`. Include:
 
 - **Overview** — what this feature does and why
 - **Goals** — what success looks like

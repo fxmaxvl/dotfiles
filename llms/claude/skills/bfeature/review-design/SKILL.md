@@ -5,9 +5,17 @@ disable-model-invocation: true
 model: opus
 ---
 
-Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `build_timestamp`. Review `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` against the criteria below.
+Run the helper script to load state and artifact paths:
 
-If `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` exists, read it as well — use it to check that the spec faithfully represents what the user said during brainstorm, and flag any requirements that were mentioned in the Q&A but are missing or misrepresented in the spec.
+```
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh
+```
+
+This gives you `slug`, `build_timestamp`, and `paths.*` — use `paths.spec`, `paths.qa`, `paths.design_report` directly.
+
+Review the file at `paths.spec` against the criteria below.
+
+If the file at `paths.qa` exists, read it as well — use it to check that the spec faithfully represents what the user said during brainstorm, and flag any requirements that were mentioned in the Q&A but are missing or misrepresented in the spec.
 
 ## Review Criteria
 
@@ -32,7 +40,7 @@ If `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` exists, read it as we
 
 ## Output
 
-Save a report to `.claude/.bfeature-temp/<build_timestamp>-<slug>-design-report.md`.
+Save a report to the path at `paths.design_report`.
 
 If all criteria pass:
 

@@ -5,13 +5,19 @@ disable-model-invocation: true
 model: sonnet
 ---
 
-Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `build_timestamp`.
+Run the helper script to load state and artifact paths:
+
+```
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh
+```
+
+This gives you `slug`, `build_timestamp`, and `paths.*` — use `paths.todo` and `paths.plan` directly.
 
 Repeat the following loop until no unchecked items remain — do not wait for user approval between iterations:
 
 **Each iteration:**
-1. Open `.claude/.bfeature-temp/<build_timestamp>-<slug>-todo.md` and pick the **first unchecked item** (one item only).
-2. Read the relevant section in `.claude/.bfeature-temp/<build_timestamp>-<slug>-plan.md` for implementation details.
+1. Open the file at `paths.todo` and pick the **first unchecked item** (one item only).
+2. Read the relevant section in `paths.plan` for implementation details.
 3. Carefully plan your approach before touching any code — think through edge cases, dependencies, and impact on existing code.
 4. Read `conventions/dev.md` and `conventions/testing.md` before writing any code — follow them strictly.
 5. Implement the item — write robust, readable code, add tests, verify tests pass.

@@ -84,7 +84,7 @@ Quick mode skips **only** brainstorm and review-design. Every other phase — re
 2. **Resolve `project_root`:** Run `git rev-parse --show-toplevel`. Store the result as `project_root`. All artifact paths below use this value.
 3. Check if `<project_root>/.claude/.bfeature-temp/build-state.json` exists
 4. If it does not exist: start from Phase 0 (init)
-5. If it exists: read it and resume:
+5. If it exists: run `bash ~/.claude/skills/bfeature/scripts/state-ops.sh` to load state and resume:
    - If `phase_status` is `"awaiting_approval"`:
      - If `phase` is `"finalize"`: re-ask the pre-finalization gate (both questions: ready to finalize? + collect TODOs?). If not ready: exit. If ready: set `phase_status` to `"in_progress"`, save `collect_todos` answer, update state, continue Phase 6 from step 3 (skip silent verify — it already passed).
      - Otherwise: ask "Paused before [current phase]. Ready to proceed?" — if yes, set `phase_status` to `"in_progress"`, update state, execute the current phase; if no, exit
@@ -105,52 +105,29 @@ Print banner: `── bfeature | Init ──────────────
    - Use the ticket key as slug prefix: `<ticket-key>-<short-description>` (e.g., `PROJ-123-dark-mode`)
    - Invoke the `jira-issue` skill: `transition-to(ticket_key, "In Progress")`
 3. If neither GitHub issue nor Jira ticket: derive a short kebab-case slug from the idea as before (e.g., "add dark mode" → "dark-mode")
-4. Create the artifacts directory: `mkdir -p <project_root>/.claude/.bfeature-temp/` (using the `project_root` resolved at invocation via `git rev-parse --show-toplevel`)
-5. **Branch selection:**
+4. **Branch selection:**
    - Check the current git branch
    - If on `master` (or the repo's main branch): create and checkout `feat/<slug>` from master
    - If on a non-master branch (e.g., `feat/something`): ask the user — "You're currently on `<branch>`. Do you want to continue working here, or create a new branch `feat/<slug>` from master?"
      - If the user chooses to continue: stay on the current branch, use the current branch name to derive the slug (strip `feat/` prefix if present)
      - If the user chooses a new branch: create and checkout `feat/<slug>` from master
 
-6. Create `.claude/.bfeature-temp/build-state.json` — before writing, capture the current timestamp as `build_timestamp` in `YYYYMMDDTHH` format (e.g., `20260409T14`). This prefix is used for all artifact filenames throughout the build:
+5. Initialize state by running `init-state.sh`. Build the argument list from what was detected above:
 
-```json
-{
-  "idea": "$ARGUMENTS",
-  "slug": "<slug>",
-  "build_timestamp": "<YYYYMMDDTHH>",
-  "mode": "full",
-  "phase": "brainstorm",
-  "phase_status": "in_progress",
-  "github_issue": {
-    "enabled": false,
-    "number": null
-  },
-  "jira": {
-    "enabled": false,
-    "ticket_key": null,
-    "ticket_url": null,
-    "pending_questions": null
-  },
-  "collect_todos": null,
-  "artifacts": {
-    "spec": null,
-    "plan": null,
-    "todo": null,
-    "backlog": null
-  },
-  "created_at": "<current ISO timestamp>",
-  "updated_at": "<current ISO timestamp>"
-}
+```
+bash ~/.claude/skills/bfeature/scripts/init-state.sh \
+  --slug "<slug>" \
+  --idea "<idea>" \
+  [--mode quick]            # only if --quick flag was detected \
+  [--jira-key PROJ-123 --jira-url <url>]   # only if Jira ticket detected \
+  [--gh-issue 42]           # only if GitHub issue detected
 ```
 
-   - If a Jira ticket was detected, set `jira.enabled` to `true`, `jira.ticket_key` to the extracted key, and `jira.ticket_url` to the original URL.
-   - The `mode` field defaults to `"full"`. If `--quick` flag was detected, set `mode` to `"quick"` and `phase` to `"refine"` instead of `"brainstorm"`.
+   The script creates `.claude/.bfeature-temp/build-state.json`, computes `build_timestamp` in `YYYYMMDDTHH` format, and outputs JSON with `slug`, `build_timestamp`, `mode`, `paths.*`, `jira`, and `github_issue` — use these values for the rest of the session instead of re-reading state.
 
-7. Proceed to Phase 1 (brainstorm for full mode, refine for quick mode).
+6. Proceed to Phase 1 (brainstorm for full mode, refine for quick mode).
 
-**Artifact naming convention:** All artifact filenames use the format `<build_timestamp>-<slug>-<artifact>.md`. For example, if the slug is `dark-mode` and the timestamp is `20260409T14`, the artifacts are `20260409T14-dark-mode-spec.md`, `20260409T14-dark-mode-plan.md`, and `20260409T14-dark-mode-todo.md`. All artifacts live in `.claude/.bfeature-temp/`. The timestamp is captured once at init, stored in state as `build_timestamp`, and reused for all artifact names.
+**Artifact naming convention:** All artifact filenames use the format `<build_timestamp>-<slug>-<artifact>.md`. The timestamp is captured once at init by `init-state.sh`, stored in state as `build_timestamp`, and reused for all artifact names. Use `paths.*` from `state-ops.sh` instead of constructing paths manually.
 
 ## Phase 1 — Brainstorm (full mode only)
 
@@ -188,9 +165,13 @@ If during brainstorm the user cannot answer a clarifying question and asks to po
 4. Tell the user: "Questions posted to Jira ticket. Run `/bfeature` again later to check for answers."
 
 ### In all cases:
-When `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` is detected:
-   - Update state: set `artifacts.spec` to `"<build_timestamp>-<slug>-spec.md"`, `phase` to `"review-design"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
-   - Proceed immediately to Phase 2 (no approval gate)
+When the file at `paths.spec` is detected:
+   ```
+   bash ~/.claude/skills/bfeature/scripts/state-ops.sh \
+     artifacts.spec="<build_timestamp>-<slug>-spec.md" \
+     phase=review-design phase_status=in_progress
+   ```
+   Proceed immediately to Phase 2 (no approval gate)
 
 ## Phase 1Q — Refine (quick mode only)
 
@@ -201,9 +182,11 @@ Skipped entirely in full mode — full mode uses Phase 1 (Brainstorm) instead.
 1. Read `bfeature/refine/SKILL.md` and follow its instructions **inline** (in the current conversation) with the idea from state
    - Runs in the main conversation — user interaction is fully available
    - Saves Q&A to `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md`
-2. When `.claude/.bfeature-temp/<build_timestamp>-<slug>-qa.md` is detected:
-   - Update state: set `phase` to `"plan"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
-   - Proceed immediately to Phase 3 (no approval gate)
+2. When the file at `paths.qa` is detected:
+   ```
+   bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase=plan phase_status=in_progress
+   ```
+   Proceed immediately to Phase 3 (no approval gate)
 
 ## Phase 2 — Review Design (full mode only)
 
@@ -222,7 +205,9 @@ Run up to 3 analyze → fix cycles:
    - If yes: read `bfeature/review-design/fix/SKILL.md` and pass its contents as an Agent prompt (model: sonnet), then go back to step 1
    - If no (user accepts as-is): proceed to step 5
    - If this was already the 3rd cycle: tell the user "Max review cycles reached — please review the spec manually" and stop
-5. Update state: `phase` to `"plan"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
+5. ```
+   bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase=plan phase_status=in_progress
+   ```
 6. Proceed immediately to Phase 3 (no approval gate)
 
 ## Phase 3 — Plan
@@ -231,9 +216,14 @@ Print banner: `── bfeature | Plan ──────────────
 
 1. Read `bfeature/plan/SKILL.md` and pass its contents as an Agent prompt (model: opus) — it reads the appropriate source based on `mode` and produces `.claude/.bfeature-temp/<build_timestamp>-<slug>-plan.md` + `.claude/.bfeature-temp/<build_timestamp>-<slug>-todo.md`
 2. When both files are detected:
-   - Update state: set `artifacts.plan` to `"<build_timestamp>-<slug>-plan.md"`, `artifacts.todo` to `"<build_timestamp>-<slug>-todo.md"`, `phase` to `"execute"`, `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp
-   - Ask the user: "Plan written to `.claude/.bfeature-temp/<build_timestamp>-<slug>-plan.md`. Ready to start execution?"
-   - If yes: set `phase_status` to `"in_progress"`, update state, proceed to Phase 4
+   ```
+   bash ~/.claude/skills/bfeature/scripts/state-ops.sh \
+     artifacts.plan="<build_timestamp>-<slug>-plan.md" \
+     artifacts.todo="<build_timestamp>-<slug>-todo.md" \
+     phase=execute phase_status=awaiting_approval
+   ```
+   - Ask the user: "Plan written. Ready to start execution?"
+   - If yes: `bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase_status=in_progress` — proceed to Phase 4
    - If no: **Exit** (re-invoke `/bfeature` when ready)
 
 ## Phase 4 — Execute
@@ -242,8 +232,10 @@ Print banner: `── bfeature | Execute ─────────────
 
 1. Read `bfeature/do-todo/SKILL.md` and pass its contents as an Agent prompt (model: sonnet) — it loops internally until all items are checked
 2. When it completes:
-   - Update state: `phase` to `"verify"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
-   - Proceed immediately to Phase 4.5 (no approval gate)
+   ```
+   bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase=verify phase_status=in_progress
+   ```
+   Proceed immediately to Phase 4.5 (no approval gate)
 
 ## Phase 4.5 — Verify
 
@@ -254,8 +246,10 @@ Print banner: `── bfeature | Verify ─────────────�
    - Runs full test suite (monorepo-scoped if applicable) — fixes failures caused by our changes; surfaces unrelated failures to the user
    - Runs linter with auto-fix where available — fixes all remaining issues manually if needed
 2. When tests and lint are green:
-   - Update state: `phase` to `"review-impl"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
-   - Proceed immediately to Phase 5 (no approval gate)
+   ```
+   bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase=review-impl phase_status=in_progress
+   ```
+   Proceed immediately to Phase 5 (no approval gate)
 
 ## Phase 5 — Review Implementation
 
@@ -272,7 +266,9 @@ Run up to 3 analyze → fix cycles:
    - If yes: read `bfeature/review-impl/fix/SKILL.md` and pass its contents as an Agent prompt (model: sonnet), then go back to step 1
    - If no (user accepts as-is): proceed to step 5
    - If this was already the 3rd cycle: tell the user "Max review cycles reached — please review the implementation manually" and stop
-5. Update state: `phase` to `"finalize"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
+5. ```
+   bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase=finalize phase_status=in_progress
+   ```
 6. Proceed immediately to Phase 6 (no approval gate here — the combined gate is inside Phase 6)
 
 ## Phase 6 — Finalize
@@ -283,11 +279,15 @@ Print banner: `── bfeature | Finalize ────────────�
    - This catches any regressions introduced by review-impl fix cycles
    - If tests or lint fail: stop, tell the user which checks failed, and ask how to proceed — do **not** commit broken code
    - If all green: continue
-2. **Pre-finalization gate:** Update state: `phase_status` to `"awaiting_approval"`, `updated_at` to current timestamp. Ask the user two questions:
+2. **Pre-finalization gate:** Run:
+   ```
+   bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase_status=awaiting_approval
+   ```
+   Then ask the user two questions:
    - "Ready to finalize (commit, push, PR)?"
    - "Should I scan for TODO comments and collect them to the backlog after?"
    - Wait for both answers before continuing. If not ready to finalize: **Exit** (re-invoke `/bfeature` when ready). Save the TODO answer in state as `collect_todos: true/false` so it survives session interruptions.
-   - If ready: set `phase_status` to `"in_progress"`, update state, continue.
+   - If ready: `bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase_status=in_progress collect_todos=<true|false>` — continue.
 3. Check for uncommitted changes (verify and review-impl/fix cycles may have left changes unstaged). If any exist: stage them (do **not** `git add` anything in `.claude/.bfeature-temp/`) and commit following `conventions/git.md`:
    - Use `feat:` prefix with a concise description of the fixes/cleanup
    - If `github_issue.enabled`, include the issue number (e.g., `feat(#12): address review concerns`)
@@ -301,7 +301,9 @@ Print banner: `── bfeature | Finalize ────────────�
    - Invoke the `jira-issue` skill: `transition-to(jira.ticket_key, "To Review")`
    - Invoke the `jira-issue` skill: `add-comment(jira.ticket_key, "PR: <pr_url>")`
 7. Tell the user: "PR is up at <pr_url>. Build complete!"
-8. Update state: `phase` to `"collect-todos"`, `phase_status` to `"in_progress"`, `updated_at` to current timestamp
+8. ```
+   bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase=collect-todos phase_status=in_progress
+   ```
 9. If `collect_todos` is `true` (set at the pre-finalization gate): proceed to Phase 7. Otherwise: skip Phase 7, proceed directly to Phase 8 (Cleanup)
 
 ## Phase 7 — Collect TODOs (optional)
@@ -311,7 +313,11 @@ Print banner: `── bfeature | Collect TODOs ───────────
 1. Read `bfeature/collect-todos/SKILL.md` and pass its contents as an Agent prompt (model: sonnet)
 2. The skill scans changes introduced by the feature branch for TODO comments, classifies them, and generates `.claude/.bfeature-temp/<build_timestamp>-<slug>-backlog.md`
 3. When complete:
-   - Update state: set `artifacts.backlog` to `"<build_timestamp>-<slug>-backlog.md"` (or `null` if no items found)
+   ```
+   bash ~/.claude/skills/bfeature/scripts/state-ops.sh artifacts.backlog="<build_timestamp>-<slug>-backlog.md"
+   # or if no items found:
+   bash ~/.claude/skills/bfeature/scripts/state-ops.sh artifacts.backlog=null
+   ```
 4. Proceed to Phase 8 (Cleanup)
 
 ## Phase 8 — Cleanup

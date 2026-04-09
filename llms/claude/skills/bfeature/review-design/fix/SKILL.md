@@ -5,10 +5,17 @@ disable-model-invocation: true
 model: sonnet
 ---
 
-Read `.claude/.bfeature-temp/build-state.json` to find the `slug` and `build_timestamp`.
-Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-design-report.md` for the list of concerns.
-Read `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` for the current spec.
+Run the helper script to load state and artifact paths:
 
-Update `.claude/.bfeature-temp/<build_timestamp>-<slug>-spec.md` in place to address every concern listed in the report.
+```
+bash ~/.claude/skills/bfeature/scripts/state-ops.sh
+```
+
+This gives you `paths.design_report` and `paths.spec`.
+
+Read the file at `paths.design_report` for the list of concerns.
+Read the file at `paths.spec` for the current spec.
+
+Update the file at `paths.spec` in place to address every concern listed in the report.
 
 Do **not** re-run the review and do **not** ask the user questions — the orchestrator handles both.
