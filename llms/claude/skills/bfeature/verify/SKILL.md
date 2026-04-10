@@ -53,7 +53,7 @@ All tests in scope must be green (or explicitly skipped by user) before proceedi
 Use `lint_command` and `lint_fix_command` from `detect-stack.sh`. If monorepo, apply `scope_template`.
 
 Run the linter. **If issues are found:**
-1. If `lint_fix_command` is non-null → run it, then re-run the linter to verify
+1. If `lint_fix_command` is non-null → run it **scoped to `changed_files` only** (the files changed by this feature, from `changed-packages.sh`) — do not auto-fix files outside that set. Then re-run the linter to verify.
 2. If still issues after auto-fix, or no auto-fix available → fix the issues manually (do NOT suppress or disable linter rules)
 3. Re-run the linter to confirm green
 4. **If any files were modified during lint fixing:** commit them immediately — read `conventions/git.md` for format, use `style:` prefix (e.g., `style: apply prettier auto-fixes`). Do not leave lint fixes as unstaged changes.

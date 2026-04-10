@@ -283,11 +283,13 @@ Print banner: `── bfeature | Finalize ────────────�
    ```
    bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase_status=awaiting_approval
    ```
-   Then ask the user two questions:
-   - "Ready to finalize (commit, push, PR)?"
-   - "Should I scan for TODO comments and collect them to the backlog after?"
-   - Wait for both answers before continuing. If not ready to finalize: **Exit** (re-invoke `/bfeature` when ready). Save the TODO answer in state as `collect_todos: true/false` so it survives session interruptions.
-   - If ready: `bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase_status=in_progress collect_todos=<true|false>` — continue.
+   Then ask the user one question at a time:
+   1. Ask: "Ready to finalize (commit, push, PR)?"
+      - If no: **Exit** (re-invoke `/bfeature` when ready).
+      - If yes: continue to next question.
+   2. Ask: "Should I scan for TODO comments and collect them to the backlog after?"
+      - Save the answer in state as `collect_todos: true/false` so it survives session interruptions.
+   Then: `bash ~/.claude/skills/bfeature/scripts/state-ops.sh phase_status=in_progress collect_todos=<true|false>` — continue.
 3. Check for uncommitted changes (verify and review-impl/fix cycles may have left changes unstaged). If any exist: stage them (do **not** `git add` anything in `.claude/.bfeature-temp/`) and commit following `conventions/git.md`:
    - Use `feat:` prefix with a concise description of the fixes/cleanup
    - If `github_issue.enabled`, include the issue number (e.g., `feat(#12): address review concerns`)
