@@ -127,7 +127,50 @@ gather (inline Q&A) → generate (opus agent) → review (inline) → handoff? (
 
 ## Phase 3 — Review
 
-TODO: added in step 6.
+── bfeature-design | Review ───────────────────────────────
+
+Track a revision counter starting at 0. Increment it on each iterate round.
+
+1. **Show a summary** of what was produced:
+   - Absolute path to the design doc.
+   - List of section headings present.
+   - Diagram count and which tool rendered them (Excalidraw or Mermaid).
+
+2. **Ask one question** (inline, wait for response):
+   ```
+   Want to iterate on the doc, or accept as-is?
+   ```
+
+3. **If the user accepts:** proceed to Phase 4.
+
+4. **If the user wants to iterate:**
+
+   a. Ask (one question, inline): "What would you like to change?" Collect freeform feedback.
+
+   b. If the revision counter is ≥ 3 (i.e., this is round 3 or later), surface **once per round** before continuing:
+      ```
+      We've iterated a few times — would you like to accept as-is or start over from the top?
+      ```
+      Handle three branches:
+      - **Accept:** proceed to Phase 4.
+      - **Start over:** delete the current design doc, discard the current Q&A file, and return to Phase 1 with the original idea. A fresh Q&A transcript will be written to a new timestamp-based temp path.
+      - **Continue iterating:** proceed to step 4c.
+
+      This prompt appears once per round — not repeatedly within the same round.
+
+   c. Re-invoke the generate agent:
+      - Read `~/.claude/skills/bfeature-design/generate/SKILL.md`.
+      - Pass its full contents as an Agent prompt with `model: opus`.
+      - The agent prompt must include:
+        - The same Q&A file path (from Phase 1).
+        - The **same output doc path** (the agent overwrites in place — no new file, no diff).
+        - A `FEEDBACK:` block containing the user's revision request.
+
+   d. Increment the revision counter.
+
+   e. Return to step 1 (show updated summary, ask iterate-or-accept again).
+
+Do NOT delete the temp Q&A file in this phase — it must stay alive for potential further revisions. Phase 4 handles cleanup.
 
 ## Phase 4 — Optional /bfeature handoff
 
