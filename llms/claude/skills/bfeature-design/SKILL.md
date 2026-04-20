@@ -174,7 +174,63 @@ Do NOT delete the temp Q&A file in this phase — it must stay alive for potenti
 
 ## Phase 4 — Optional /bfeature handoff
 
-TODO: added in step 7.
+── bfeature-design | Handoff ───────────────────────────────
+
+1. **Ask one question** (inline, wait for response):
+   ```
+   Do you want to kick off /bfeature with this design as the starting spec?
+   ```
+
+2. **If NO:**
+
+   a. Delete the temp Q&A file at `/tmp/bfeature-design-qa-<timestamp>.md`. If deletion fails, warn but do not abort.
+
+   b. Print:
+      ```
+      Design doc saved at <absolute path>. It's yours to share —
+      paste into Confluence, link from Jira, whatever works best.
+      ```
+
+   c. Print the sensitive-data reminder:
+      ```
+      Reminder: review the doc for sensitive details (internal service
+      names, auth schemes, API keys) before sharing externally.
+      ```
+
+   d. End the session.
+
+3. **If YES:**
+
+   a. Ask a **separate** one-question prompt (inline, wait for response):
+      ```
+      Full mode or quick mode?
+        - full  = brainstorm + review-design + plan + execute + verify + review-impl + finalize
+        - quick = plan + execute + verify + review-impl + finalize (no brainstorm, no review-design)
+      ```
+      Accept "full" or "quick" (case-insensitive).
+
+   b. Construct the bfeature args string:
+      ```
+      <original idea text>
+
+      (Design doc: <absolute path to design doc>)
+      ```
+
+   c. Delete the temp Q&A file at `/tmp/bfeature-design-qa-<timestamp>.md` **before** invoking bfeature. If deletion fails, warn but proceed.
+
+   d. Print the sensitive-data reminder:
+      ```
+      Reminder: review the doc for sensitive details (internal service
+      names, auth schemes, API keys) before sharing externally.
+      ```
+
+   e. Invoke bfeature via the Skill tool:
+      - Full mode: `Skill("bfeature", args="<constructed args>")`
+      - Quick mode: `Skill("bfeature", args="--quick <constructed args>")`
+
+      Do NOT ask the user to paste a command manually. Do NOT read the bfeature SKILL.md directly — the Skill tool handles that.
+
+4. Hand control to /bfeature (if YES) or end the session (if NO).
 
 Here is the idea:
 $ARGUMENTS
