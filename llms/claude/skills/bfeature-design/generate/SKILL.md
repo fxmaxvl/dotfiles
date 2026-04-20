@@ -24,15 +24,9 @@ Then exit without writing anything. The orchestrator's retry logic handles recov
 
 If the prompt includes a `FEEDBACK:` block (revision mode), Read the existing doc at the output path first, then apply the feedback and overwrite the same file (see Revision mode below).
 
-## Step 0 — Explore all layers named in the Q&A
+## Step 0 — Do NOT explore the codebase
 
-Before writing a single line of the design doc, scan the Q&A for every named system, service, package, component, file, or API. For each one:
-
-1. Locate it in the current codebase using Glob and Grep.
-2. Read enough of its structure to understand its types, interfaces, and boundaries.
-3. If a named item cannot be found in the codebase, flag it explicitly in a "Notes / Unknowns" section at the end of the design doc.
-
-This step is mandatory. A system or service that appears in the Q&A must appear in the design doc. Do not skip this step even if the codebase is unfamiliar.
+**Hard rule:** Do not read, Glob, Grep, or otherwise inspect the current project's codebase. This skill produces a high-level design document from the Q&A alone — it is codebase-agnostic by design. Named systems, services, and APIs mentioned in the Q&A are treated as architectural concepts, not as files to locate. If any system is unknown or unresolved, flag it in the "Open questions / risks" section based on the Q&A context, not on filesystem inspection.
 
 ## Step 1 — Diagram tool selection
 

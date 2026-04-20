@@ -10,6 +10,8 @@ Orchestrate a 4-phase design flow: Gather → Generate → Review → Optional /
 
 **Hard rule — one question per turn:** In every interactive phase (Gather, Review, Handoff), ask exactly one question, then stop and wait for the answer. Never batch two or more questions in a single response, even when transitioning between steps.
 
+**Hard rule — no codebase access:** This skill is codebase-agnostic. Do not read, Glob, Grep, or inspect any files in the current project. The design document is produced entirely from the Q&A. Named systems and services are treated as architectural concepts, not as code to locate.
+
 ## Sub-skill Resolution
 
 Sub-skills are **not registered** with the Skill tool and cannot be invoked via `Skill(name)`. Locate them using `Glob("~/.claude/skills/bfeature-design/**/SKILL.md")`.
