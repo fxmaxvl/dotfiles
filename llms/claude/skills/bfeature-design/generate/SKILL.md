@@ -52,6 +52,15 @@ Use this decision tree, in order:
 
 ## Step 2 — Write the design doc
 
+### Tone and audience
+
+**Hard rule — stakeholder document:** This doc is written for a non-technical or mixed audience (stakeholders, product, leadership). It must be:
+
+- **Free of implementation specifics:** no code snippets, no internal tool names (no mentions of bfeature, Claude, or any internal tooling), no framework or library references, no file paths or codebase details.
+- **Concept-level, not code-level:** describe systems and interactions in terms of responsibilities, data flows, and trust boundaries — not classes, endpoints, or database schemas.
+- **Decision-enabling, not solution-prescribing:** the goal is to align stakeholders on the problem and the high-level approach. Detailed implementation planning comes after stakeholder review.
+- **Jargon-light:** define any technical term the first time it appears. Avoid abbreviations without explanation.
+
 Compose all sections in memory, then write the complete document to the output path in a **single Write call**. Do not write partial content or multiple files.
 
 Required sections (H1 title, then H2 for each subsequent section):
@@ -62,12 +71,11 @@ Required sections (H1 title, then H2 for each subsequent section):
 | Summary | 2–4 sentences: what this design covers, why it matters, what the outcome is |
 | Context & problem | Current state, pain points, and why a change is needed |
 | Actors & systems | Who and what is involved; include roles, permissions, and ownership |
-| Proposed design | The meat: data flow, API boundaries, key data structures, trust / auth model, key decisions and their rationale |
+| Proposed design | Data flow, service responsibilities, trust / auth model, and key decisions with rationale — concept-level, no code |
 | Diagrams | All diagrams with mandatory captions |
 | Alternatives considered | Other approaches and why they were ruled out or deferred |
 | Open questions / risks | Unresolved design questions, known risks, and mitigation ideas |
-| Next steps | Immediate follow-on actions; note that `/bfeature` can turn this into a full implementation plan |
-| Notes / Unknowns | Only present if Step 0 flagged unresolved layers or systems |
+| Notes / Unknowns | Only present if there are unresolved systems or concepts from the Q&A |
 
 Q&A → doc section mapping (guidance, not a strict contract):
 
@@ -80,7 +88,7 @@ Q&A → doc section mapping (guidance, not a strict contract):
 | Failure modes | Open questions / risks |
 | Alternatives considered | Alternatives considered |
 | Constraints | Proposed design, Notes / Unknowns |
-| Success criteria | Next steps |
+| Success criteria | Open questions / risks |
 
 ## Output
 
