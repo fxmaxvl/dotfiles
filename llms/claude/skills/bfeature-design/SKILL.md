@@ -8,6 +8,8 @@ allowed-tools: Read, Write, Glob, Grep, mcp__claude_ai_Excalidraw__create_view, 
 
 Orchestrate a 4-phase design flow: Gather → Generate → Review → Optional /bfeature handoff. This skill is standalone — no git work, no build-state.json, no branches, no PR. Re-invoking the skill does NOT resume a previous session — there is no state file.
 
+**Hard rule — one question per turn:** In every interactive phase (Gather, Review, Handoff), ask exactly one question, then stop and wait for the answer. Never batch two or more questions in a single response, even when transitioning between steps.
+
 ## Sub-skill Resolution
 
 Sub-skills are **not registered** with the Skill tool and cannot be invoked via `Skill(name)`. Locate them using `Glob("~/.claude/skills/bfeature-design/**/SKILL.md")`.

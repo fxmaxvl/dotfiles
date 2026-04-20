@@ -6,9 +6,9 @@ model: opus
 argument-hint: [idea description]
 ---
 
-Gather design requirements by asking the user one question at a time.
+**Hard rule — one question per turn:** Ask exactly one question, then stop and wait for the answer. Never batch two or more questions in a single response, even when transitioning between topic areas.
 
-**Hard rule:** Ask exactly one question per turn. Never batch two or more questions in a single response. Wait for the answer before proceeding to the next question.
+Gather design requirements by asking the user one question at a time.
 
 ## Conventions
 
