@@ -47,7 +47,7 @@ gather (inline Q&A) → generate (opus agent) → review (inline) → handoff? (
 
 ## Phase 1 — Gather
 
-── bfeature-design | Gather ───────────────────────────────
+Print banner: `── bfeature-design | Gather ───────────────────────────────`
 
 1. Read `~/.claude/skills/bfeature-design/gather/SKILL.md` and follow its instructions **inline** in the current conversation. Pass the idea as `$ARGUMENTS`.
 
@@ -87,7 +87,7 @@ gather (inline Q&A) → generate (opus agent) → review (inline) → handoff? (
 
 ## Phase 2 — Generate
 
-── bfeature-design | Generate (may take 1–2 min) ──────────
+Print banner: `── bfeature-design | Generate (may take 1–2 min) ──────────`
 
 1. **Derive a slug** from the original idea:
    - Convert to kebab-case and ASCII characters only (strip accents and non-ASCII).
@@ -127,7 +127,7 @@ gather (inline Q&A) → generate (opus agent) → review (inline) → handoff? (
 
 ## Phase 3 — Review
 
-── bfeature-design | Review ───────────────────────────────
+Print banner: `── bfeature-design | Review ───────────────────────────────`
 
 Track a revision counter starting at 0. Increment it on each iterate round.
 
@@ -174,7 +174,7 @@ Do NOT delete the temp Q&A file in this phase — it must stay alive for potenti
 
 ## Phase 4 — Optional /bfeature handoff
 
-── bfeature-design | Handoff ───────────────────────────────
+Print banner: `── bfeature-design | Handoff ───────────────────────────────`
 
 1. **Ask one question** (inline, wait for response):
    ```
