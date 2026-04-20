@@ -122,7 +122,7 @@ Print banner: `── bfeature-design | Generate (may take 1–2 min) ───�
 7. **On success:** Tell the user:
    - The **absolute path** of the generated doc.
    - A brief summary: sections present, diagram count, diagram tool used (Excalidraw or Mermaid).
-   
+
    Then proceed to Phase 3.
 
 ## Phase 3 — Review
