@@ -2,12 +2,25 @@
 name: bfeature-design-gather
 description: Inline Q&A sub-skill that collects design requirements through structured questions. Returns a structured Q&A list to the orchestrator — never writes files itself.
 disable-model-invocation: true
+model: opus
 argument-hint: [idea description]
 ---
 
 Gather design requirements by asking the user one question at a time.
 
 **Hard rule:** Ask exactly one question per turn. Never batch two or more questions in a single response. Wait for the answer before proceeding to the next question.
+
+## Conventions
+
+Before asking questions, check whether any of the following convention files apply to the design space described in `$ARGUMENTS`. Read any that are relevant — they inform what questions are worth asking and what constraints to surface.
+
+Use `Glob("~/.claude/conventions/*.md")` to find available files. Relevant conventions to consider:
+
+- `architecture.md` — if the idea involves system boundaries, service decomposition, or data ownership
+- `dev.md` — if the idea implies implementation decisions (languages, patterns, testing)
+- `typescript.md` — if the idea involves TypeScript/JavaScript services
+
+Do not read all conventions blindly — use judgment. If the idea is purely infrastructure, skip `dev.md`. If it is a generic process design, skip `typescript.md`.
 
 ## Input
 
